@@ -1,39 +1,61 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { ApiService } from '../services/ApiService';
-import baseStyles from '../style/base';
+import { createContext, useContext, useState, useEffect } from "react";
+import { ApiService } from "../services/ApiService/ApiService";
+import baseStyles from "../style/base";
+import { Log, Profile } from "../services/ApiService/DB.types";
 
 const AppStateContext = createContext();
 
 export const AppStateProvider = ({ children }) => {
-  const [state, setState] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [trajectories, setTrajectories] = useState({});
+  const [logs, setLogs] = useState([]);
+  const [loot, setLoot] = useState([]);
+  const [vault, setVault] = useState([]);
   const [loading, setLoading] = useState(true);
   const styles = baseStyles;
 
-  // Hydrate data from API on app mount
   useEffect(() => {
-    const loadData = async () => {
+    const initApp = async () => {
       try {
-        const data = await ApiService.fetchAppData();
-        setState(data);
+        setLoading(true);
+        // Assuming you added a "fetchAll" or similar to ApiService
+        const data = await ApiService.fetchAllData();
+
+        setProfile(data.profile);
+        setTrajectories(data.trajectories);
+        setLogs(data.logs);
+        setLoot(data.loot);
+        setVault(data.vault);
       } catch (err) {
-        console.error("Failed to load app data from ApiService", err);
+        console.error("Initialization failed:", err);
       } finally {
         setLoading(false);
       }
     };
-    loadData();
+
+    initApp();
   }, []);
 
   /**
    * Log an activity: trajectoryId, resistance ("Flow", "Neutral", "Resistant", "Soul-Crushing"), note
    * API calculates XP and updates state
    */
-  const logActivity = async (trajectoryId, resistance, note, durationHours = 0) => {
+  const logActivity = async (
+    trajectoryId,
+    resistance,
+    note,
+    durationHours = 0,
+  ) => {
     try {
-      const response = await ApiService.saveActivityLog(trajectoryId, resistance, note, durationHours);
+      const response = await ApiService.saveActivityLog(
+        trajectoryId,
+        resistance,
+        note,
+        durationHours,
+      );
       if (response.success) {
-        setState(response.updatedState);
-        return response.updatedState;
+        setLogs(response.logs);
+        return response.logs;
       }
     } catch (err) {
       console.error("Failed to log activity", err);
@@ -46,10 +68,13 @@ export const AppStateProvider = ({ children }) => {
    */
   const clearMilestone = async (trajectoryId, milestoneId) => {
     try {
-      const response = await ApiService.clearMilestone(trajectoryId, milestoneId);
+      const response = await ApiService.clearMilestone(
+        trajectoryId,
+        milestoneId,
+      );
       if (response.success) {
-        setState(response.updatedState);
-        return response.updatedState;
+        setTrajectories(response.trajectory);
+        return response.trajectory;
       }
     } catch (err) {
       console.error("Failed to clear milestone", err);
@@ -64,8 +89,8 @@ export const AppStateProvider = ({ children }) => {
     try {
       const response = await ApiService.purchaseLootItem(itemId);
       if (response.success) {
-        setState(response.updatedState);
-        return response.updatedState;
+        setLoot(response.loot);
+        return response.loot;
       }
     } catch (err) {
       console.error("Failed to purchase item", err);
@@ -73,32 +98,19 @@ export const AppStateProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Get app data
-   */
-  const getAppData = async () => {
-    try {
-      const response = await ApiService.fetchAppData();
-      if (response.success) {
-        return response.data;
-      }
-    } catch (err) {
-      console.error("Failed to purchase item", err);
-      throw err;
-    }
-  }
-
-
   return (
     <AppStateContext.Provider
       value={{
-        ...state,
+        profile,
+        trajectories,
+        logs,
+        loot,
+        vault,
         loading,
-        styles,
         logActivity,
         clearMilestone,
         purchaseItem,
-          getAppData,
+        styles,
       }}
     >
       {children}
@@ -109,7 +121,7 @@ export const AppStateProvider = ({ children }) => {
 export const useAppState = () => {
   const context = useContext(AppStateContext);
   if (!context) {
-    throw new Error('useAppState must be used inside AppStateProvider');
+    throw new Error("useAppState must be used inside AppStateProvider");
   }
   return context;
 };
