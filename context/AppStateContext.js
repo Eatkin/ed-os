@@ -12,6 +12,7 @@ export const AppStateProvider = ({ children }) => {
   const [loot, setLoot] = useState([]);
   const [vault, setVault] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [logModalVisible, setLogModalVisible] = useState(false);
   const styles = baseStyles;
 
   useEffect(() => {
@@ -35,6 +36,17 @@ export const AppStateProvider = ({ children }) => {
 
     initApp();
   }, []);
+
+  /** 
+   * Open / close log modal
+   */
+  const openLogModal = () => {
+    return;
+  }
+
+  const closeLogModal = () => {
+    return;
+  }
 
   /**
    * Log an activity: trajectoryId, resistance ("Flow", "Neutral", "Resistant", "Soul-Crushing"), note
@@ -110,6 +122,10 @@ export const AppStateProvider = ({ children }) => {
         logActivity,
         clearMilestone,
         purchaseItem,
+          logModalVisible,
+          setLogModalVisible,
+          openLogModal,
+          closeLogModal,
         styles,
       }}
     >

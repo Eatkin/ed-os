@@ -1,3 +1,4 @@
+import { getLevelProgress } from "../../utils/xp";
 import { calculateHeat } from "./DB.utils";
 
 export class HeroStats {
@@ -37,28 +38,52 @@ export class HeroStats {
       },
     ];
   }
+
+  get maxVal() {
+    // Default to 1 if no attributes given
+    return Math.max(
+      this.cognition,
+      this.dexterity,
+      this.balance,
+      this.endurance,
+      1,
+    );
+  }
 }
 
 export class Profile {
   constructor({
     name = "Unknown",
-    level = 1,
     totalXP = 0,
     heroPoints = 0,
     attributes = {},
   } = {}) {
     this.name = name;
-    this.level = level;
     this.totalXP = totalXP;
     this.heroPoints = heroPoints;
     // Instantiate the nested class so you always have access to methods on attributes
     this.attributes = new HeroStats(attributes);
   }
 
-get xpProgress() {
-  if (!this.totalXP) return 0;
-  return ((this.totalXP % LEVEL_UP_XP) / LEVEL_UP_XP) * 100;
-}
+  get levelProgress() {
+    return getLevelProgress(this.totalXP);
+  }
+
+  get level() {
+    return this.levelProgress.level;
+  }
+
+  get xpProgress() {
+    return this.levelProgress.xpProgress;
+  }
+
+  get xpToNextLevel() {
+    return this.levelProgress.xpToNextLevel;
+  }
+
+  get currentLevelXP() {
+    return this.levelProgress.currentXP;
+  }
 }
 
 export class Milestone {

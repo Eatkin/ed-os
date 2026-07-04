@@ -41,20 +41,6 @@
 
 ---
 
-### Budget
-**Function:** Monthly Pokémon allowance tracker. Fixed allocation, spend log, rollover balance, gated by milestone.
-
-- Monthly stats:
-  - Allowance: fixed allocation (e.g., £30/month)
-  - Spent this month: sum of recent logs
-  - Remaining: allowance - spent
-  - Rollover: carryover from previous month
-- Spend log: list of purchases this month (date, amount, description)
-- Add spend: button to log a purchase (amount + what you bought)
-- Milestone gate note: "Unlock broader card selection by clearing `m_pokemon_monthly_budget` milestone"
-
----
-
 ### Prompts
 **Function:** Inspiration screen. Random nudges based on activity, surfaces cold/frozen trajectories, dismissable.
 

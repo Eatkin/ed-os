@@ -3,7 +3,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppState } from "../../context/AppStateContext";
 import LogItem from "../LogItem";
 import { getHeatColor } from "../../utils/trajectories";
-import { LEVEL_UP_XP } from "../../services/ApiService/DB.constants";
 
 const HomeScreen = () => {
   // Pull loading from context, not local state
@@ -19,33 +18,15 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>// Welcome, Hero {profile.name}</Text>
+      <Text style={styles.title}>// EdOS</Text>
 
       {/* Level */}
       <View style={{ alignItems: "center", marginVertical: 20 }}>
         <Text
-          style={{ fontSize: 32, fontFamily: "monospace", color: "#00FF00" }}
+          style={styles.subtitle}
         >
-          LVL {profile.level}
+          Welcome, Hero {profile.name}
         </Text>
-        <View
-          style={{
-            width: "80%",
-            height: 6,
-            backgroundColor: "#333",
-            borderRadius: 3,
-            marginTop: 8,
-          }}
-        >
-          <View
-            style={{
-              width: `${profile.xpProgress}%`,
-              height: 6,
-              backgroundColor: "#00FF00",
-              borderRadius: 3,
-            }}
-          />
-        </View>
       </View>
 
       <View style={styles.card}>
@@ -74,12 +55,16 @@ const HomeScreen = () => {
           >
             <Text style={styles.statLabel}>EXPERIENCE</Text>
             <Text style={styles.statLabel}>
-              {profile.totalXP} /{" "}
-              {Math.ceil(profile.totalXP / LEVEL_UP_XP) + LEVEL_UP_XP}
+              {profile.currentLevelXP} / {profile.xpToNextLevel}
             </Text>
           </View>
           <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: "65%" }]} />
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${profile.xpProgress}%` },
+              ]}
+            />
           </View>
         </View>
 
@@ -109,7 +94,7 @@ const HomeScreen = () => {
               >
                 <View
                   style={{
-                    width: `${Math.min(attr.val * 5, 100)}%`,
+                    width: `${(attr.val / profile.attributes.maxVal) * 100}%`,
                     height: 4,
                     backgroundColor: "#0f0",
                   }}
@@ -172,7 +157,6 @@ const HomeScreen = () => {
       <View style={styles.card}>
         <Text style={styles.monospaceText}>// RECENT_LOGS</Text>
         <ScrollView style={{ maxHeight: 200 }}>
-          {/* FIX: Use 'logs' (the array from context) instead of 'log' */}
           {logs && logs.length > 0 ? (
             logs.map((entry) => <LogItem key={entry.id} log={entry} />)
           ) : (
