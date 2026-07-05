@@ -78,6 +78,19 @@ const baseStyles = StyleSheet.create({
     backgroundColor: "#FFB300",
     borderRadius: 3,
   },
+backButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 12,
+  paddingHorizontal: 4,
+  marginBottom: 8,
+},
+backButtonText: {
+  color: "#FFB300",
+  fontSize: 16,
+  fontFamily: "monospace",
+  fontWeight: "bold",
+},
 });
 
 export default baseStyles;

@@ -50,7 +50,7 @@ const HomeScreenStats = () => {
         >
           <Text style={styles.statLabel}>ASSETS: </Text>
           <Text style={[styles.statValue, { color: "#FFD700" }]}>
-            {profile.heroPoints} <Text style={{ fontSize: 12 }}>HP</Text>
+            {profile.heroPoints} <Text style={{ fontSize: 12 }}>Hero Points</Text>
           </Text>
         </View>
       </View>

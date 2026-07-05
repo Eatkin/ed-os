@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { ApiService } from "../services/ApiService/ApiService";
 import baseStyles from "../style/base";
-import { Log, Profile } from "../services/ApiService/DB.types";
 
 const AppStateContext = createContext();
 
@@ -13,40 +12,42 @@ export const AppStateProvider = ({ children }) => {
   const [vault, setVault] = useState([]);
   const [loading, setLoading] = useState(true);
   const [logModalVisible, setLogModalVisible] = useState(false);
+  const [logModalTrajectoryId, setLogModalTrajectoryId] = useState(null);
   const styles = baseStyles;
 
+  // Single place that re-pulls everything from the mock backend.
+  // Used on initial load AND after any mutation (log saved, milestone cleared, etc.)
+  const refreshAll = async () => {
+    const data = await ApiService.fetchAllData();
+    setProfile(data.profile);
+    setTrajectories(data.trajectories);
+    setLogs(data.logs);
+    setLoot(data.loot);
+    setVault(data.vault);
+  };
+
   useEffect(() => {
-    const initApp = async () => {
-      try {
-        setLoading(true);
-        // Assuming you added a "fetchAll" or similar to ApiService
-        const data = await ApiService.fetchAllData();
-
-        setProfile(data.profile);
-        setTrajectories(data.trajectories);
-        setLogs(data.logs);
-        setLoot(data.loot);
-        setVault(data.vault);
-      } catch (err) {
-        console.error("Initialization failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initApp();
+    (async () => {
+      setLoading(true);
+      await refreshAll();
+      setLoading(false);
+    })();
   }, []);
 
-  /** 
+  /**
    * Open / close log modal
    */
-  const openLogModal = () => {
-    return;
-  }
+  // trajectoryId is optional — set when opened from a detail screen (pre-picked),
+  // left undefined/null when opened from the + tab (shows the picker grid)
+  const openLogModal = (trajectoryId = null) => {
+    setLogModalTrajectoryId(trajectoryId);
+    setLogModalVisible(true);
+  };
 
   const closeLogModal = () => {
-    return;
-  }
+    setLogModalVisible(false);
+    setLogModalTrajectoryId(null);
+  };
 
   /**
    * Log an activity: trajectoryId, resistance ("Flow", "Neutral", "Resistant", "Soul-Crushing"), note
@@ -85,8 +86,8 @@ export const AppStateProvider = ({ children }) => {
         milestoneId,
       );
       if (response.success) {
-        setTrajectories(response.trajectory);
-        return response.trajectory;
+        setTrajectories(response.trajectories);
+        return response.trajectories;
       }
     } catch (err) {
       console.error("Failed to clear milestone", err);
@@ -122,11 +123,13 @@ export const AppStateProvider = ({ children }) => {
         logActivity,
         clearMilestone,
         purchaseItem,
-          logModalVisible,
-          setLogModalVisible,
-          openLogModal,
-          closeLogModal,
+        logModalVisible,
+        logModalTrajectoryId,
+        setLogModalVisible,
+        openLogModal,
+        closeLogModal,
         styles,
+        refreshAll,
       }}
     >
       {children}

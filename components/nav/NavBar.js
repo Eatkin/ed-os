@@ -8,12 +8,12 @@ import {
   VaultIcon,
   BulbIcon,
 } from "../../assets/vectors";
-import HomeScreen from "../screens/HomeScreen";
-import GoalsScreen from "../screens/GoalsScreen";
 import WantsScreen from "../screens/WantsScreen";
 import PromptsScreen from "../screens/PromptsScreen";
 import { useAppState } from "../../context/AppStateContext";
 import NullScreen from "../screens/NullScreen";
+import { GoalsStack } from "../goalsScreen/GoalsStack";
+import { HomeStack } from "../homeScreen/HomeStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -65,7 +65,7 @@ export function NavigationShell() {
       >
         <Tab.Screen
           name="Home"
-          component={HomeScreen}
+          component={HomeStack}
           options={{
             tabBarIcon: ({ color, size }) => (
               <SwordIcon color={color} size={size} />
@@ -74,7 +74,7 @@ export function NavigationShell() {
         />
         <Tab.Screen
           name="Goals"
-          component={GoalsScreen}
+          component={GoalsStack}
           options={{
             tabBarIcon: ({ color, size }) => (
               <TargetIcon color={color} size={size} />
@@ -86,7 +86,7 @@ export function NavigationShell() {
           name="AddLog"
           component={NullScreen} // placeholder, unreachable
           options={{
-            tabBarButton: () => <CustomCenterButton onPress={openLogModal} />,
+            tabBarButton: () => <CustomCenterButton onPress={() => openLogModal()} />,
           }}
           listeners={{
             tabPress: (e) => e.preventDefault(), // block default nav to placeholder

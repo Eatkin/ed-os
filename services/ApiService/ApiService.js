@@ -141,7 +141,7 @@ export const ApiService = {
     // In a real app, milestones have completion criteria that logic here would evaluate
     return {
       success: true,
-      logs: await this.getLogs(),
+      logs: await ApiService.getLogs(),
     };
   },
 
@@ -169,7 +169,7 @@ export const ApiService = {
 
     return {
       success: true,
-      trajectories: await this.getTrajectories(),
+      trajectories: await ApiService.getTrajectories(),
     };
   },
 
@@ -206,7 +206,7 @@ export const ApiService = {
 
     return {
       success: true,
-      loot: await this.getLootStore(),
+      loot: await ApiService.getLootStore(),
     };
   },
 
@@ -226,7 +226,7 @@ export const ApiService = {
 
     return {
       success: true,
-      vault: await this.getVault(),
+      vault: await ApiService.getVault(),
     };
   },
 
@@ -240,7 +240,7 @@ export const ApiService = {
 
     return {
       success: true,
-      vault: await this.getVault(),
+      vault: await ApiService.getVault(),
     };
   },
 };

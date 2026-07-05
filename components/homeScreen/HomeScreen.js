@@ -4,10 +4,10 @@ import { useAppState } from "../../context/AppStateContext";
 import HomeScreenTitle from "./Title";
 import HomeScreenStats from "./Stats";
 import HomeScreenAttributes from "./Attributes";
-import HomeScreenTrajectories from "./Trajectories";
 import HomeScreenLogs from "./Logs";
+import HomeScreenTrajectories from "./Trajectories";
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   // Pull loading from context, not local state
   const { styles, profile, loading } = useAppState();
 
