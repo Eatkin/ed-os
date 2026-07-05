@@ -143,7 +143,6 @@ export class EnrichedTrajectory extends Trajectory {
     // Calculate dynamic properties
     this.weeklyLogs = this._calculateWeeklyLogs(logs);
     this.weeklyLogCount = this.weeklyLogs.length;
-    this.streakWeeks = this._calculateStreak(logs);
   }
 
   _calculateWeeklyLogs(logs) {
@@ -152,12 +151,6 @@ export class EnrichedTrajectory extends Trajectory {
       (log) =>
         log.trajectoryId === this.id && new Date(log.timestamp) >= weekAgo,
     );
-  }
-
-  _calculateStreak(logs) {
-    // Logic for streak calculation goes here
-    // Example: simple placeholder
-    return 0;
   }
 }
 

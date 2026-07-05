@@ -27,14 +27,10 @@ export function enrichTrajectory(traj) {
     (log) => log.trajectoryId === traj.id && log.timestamp >= weekAgo,
   );
 
-  // Derive streak (consecutive weeks at or above target)
-  const streakWeeks = calculateStreak(traj.id);
-
   return {
     ...traj,
     heat,
     weeklyLogCount: weeklyLogs.length,
-    streakWeeks,
   };
 }
 
