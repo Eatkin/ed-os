@@ -5,7 +5,7 @@ import BackButton from "./BackButton";
 
 const TrajectoryDetailScreen = ({ route, navigation }) => {
   const { trajectoryId } = route.params;
-  const { styles, trajectories, vault, openLogModal } = useAppState();
+  const { styles, trajectories, vault, openLogModal, openMilestoneModal } = useAppState();
   const traj = trajectories[trajectoryId];
 
   if (!traj) return null; // shouldn't happen, but guards a bad/stale id
@@ -22,7 +22,12 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
       <View style={styles.card}>
         <Text style={styles.statLabel}>LEVEL {traj.level}</Text>
         <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: `${traj.xpProgress ?? 0}%` }]} />
+          <View
+            style={[
+              styles.progressBarFill,
+              { width: `${traj.xpProgress ?? 0}%` },
+            ]}
+          />
         </View>
         <Text style={styles.statLabel}>
           {traj.weeklyLogCount}/{traj.weeklyTarget} this week
@@ -39,13 +44,17 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
       <ScrollView style={{ marginTop: 10 }}>
         <Text style={styles.subtitle}>MILESTONES</Text>
         {traj.milestones.map((m) => (
-          <View key={m.id} style={styles.card}>
+          <TouchableOpacity
+            key={m.id}
+            style={styles.card}
+            disabled={m.cleared}
+            onPress={() => openMilestoneModal(traj.id, m.id)}
+          >
             <Text style={styles.statValue}>
               {m.cleared ? "✅" : "⬜️"} {m.text}
             </Text>
-          </View>
+          </TouchableOpacity>
         ))}
-
         {trajVaultEntries.length > 0 && (
           <>
             <Text style={styles.subtitle}>VAULT</Text>

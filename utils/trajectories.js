@@ -8,3 +8,15 @@ export const getHeatColour = (heat) => {
   
   return colours[heat.toLowerCase()] || '#FFFFFF'; // Fallback to white
 };
+
+// Logs for one trajectory within the last 7 days (rolling window, not calendar week)
+export function getWeeklyLogs(trajectoryId, logs) {
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  return logs.filter(
+    (log) => log.trajectoryId === trajectoryId && new Date(log.timestamp) >= weekAgo,
+  );
+}
+
+export function getWeeklyLogCount(trajectoryId, logs) {
+  return getWeeklyLogs(trajectoryId, logs).length;
+}

@@ -4,8 +4,17 @@
  * Heat-based trajectory tracking: no guilt, no decay, just visibility
  */
 
-import { DB_STATE, FRICTION_BASE_XP, LEVEL_UP_XP, RESISTANCE_MULTIPLIERS } from "./DB.constants";
-import { EnrichedTrajectory, Log, LootItem, Profile, VaultItem } from "./DB.types";
+import {
+  DB_STATE,
+} from "./DB.constants";
+import {
+  EnrichedTrajectory,
+  Log,
+  LootItem,
+  Profile,
+  VaultItem,
+} from "./DB.types";
+import { clearMilestoneAndUnlockLoot, createLogAndApplyXP } from "./helpers";
 // ============================================================================
 // HELPERS
 // ============================================================================
@@ -27,10 +36,13 @@ export const ApiService = {
     // Assuming DB_STATE is available here or imported
     return {
       profile: new Profile(DB_STATE.profile),
-      trajectories: Object.entries(DB_STATE.trajectories).reduce((acc, [k, v]) => {
-        acc[k] = new EnrichedTrajectory(v, DB_STATE.logs);
-        return acc;
-      }, {}),
+      trajectories: Object.entries(DB_STATE.trajectories).reduce(
+        (acc, [k, v]) => {
+          acc[k] = new EnrichedTrajectory(v, DB_STATE.logs);
+          return acc;
+        },
+        {},
+      ),
       logs: DB_STATE.logs.map((l) => new Log(l)),
       loot: DB_STATE.lootStore.map((l) => new LootItem(l)),
       vault: DB_STATE.vault.map((v) => new VaultItem(v)),
@@ -79,70 +91,8 @@ export const ApiService = {
     durationHours = 0,
   ) => {
     await simulateNetworkLag();
-
-    const traj = DB_STATE.trajectories[trajectoryId];
-
-    if (!traj) {
-      throw new Error(`Trajectory ${trajectoryId} not found`);
-    }
-
-    if (!RESISTANCE_MULTIPLIERS[resistance]) {
-      throw new Error(
-        `Invalid resistance: ${resistance}. Must be one of ${Object.keys(
-          RESISTANCE_MULTIPLIERS,
-        ).join(", ")}`,
-      );
-    }
-
-    // Calculate XP awarded
-    const baseXP = FRICTION_BASE_XP[traj.friction] || 10;
-    const multiplier = RESISTANCE_MULTIPLIERS[resistance];
-    const pointsAwarded = Math.floor(baseXP * multiplier);
-
-    // Create log entry
-    const newLog = {
-      id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
-      trajectoryId,
-      timestamp: new Date().toISOString(),
-      resistance,
-      note,
-      durationHours,
-      pointsAwarded,
-    };
-
-    // Mutate DB state (mock backend)
-    DB_STATE.logs.unshift(newLog);
-    DB_STATE.profile.heroPoints += pointsAwarded;
-    DB_STATE.profile.totalXP += pointsAwarded;
-
-    // Update trajectory: XP, lastLoggedAt, check level-up
-    traj.xp += pointsAwarded;
-    traj.lastLoggedAt = new Date().toISOString();
-    while (traj.xp >= LEVEL_UP_XP) {
-      traj.level += 1;
-      traj.xp -= LEVEL_UP_XP;
-      // Distribute XP to profile attributes based on weights
-      const totalWeight = Object.values(traj.attributeWeights).reduce(
-        (a, b) => a + b,
-        0,
-      );
-
-      Object.entries(traj.attributeWeights).forEach(([attr, weight]) => {
-        const gain = Math.floor(
-          (pointsAwarded / LEVEL_UP_XP) * (weight / totalWeight),
-        );
-
-        DB_STATE.profile.attributes[attr] =
-          (DB_STATE.profile.attributes[attr] || 0) + gain;
-      });
-    }
-
-    // Check milestones (simplified: for now, you'd unlock manually in the UI)
-    // In a real app, milestones have completion criteria that logic here would evaluate
-    return {
-      success: true,
-      logs: await ApiService.getLogs(),
-    };
+    createLogAndApplyXP({ trajectoryId, resistance, note, durationHours });
+    return { success: true, logs: await ApiService.getLogs() };
   },
 
   /**
@@ -151,26 +101,34 @@ export const ApiService = {
    */
   clearMilestone: async (trajectoryId, milestoneId) => {
     await simulateNetworkLag();
-    const traj = DB_STATE.trajectories[trajectoryId];
-    if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
-    const milestone = traj.milestones.find((m) => m.id === milestoneId);
-    if (!milestone) throw new Error(`Milestone ${milestoneId} not found`);
-    milestone.cleared = true;
-    // Unlock associated loot items
-    if (milestone.unlocksLootIds && milestone.unlocksLootIds.length > 0) {
-      milestone.unlocksLootIds.forEach((lootId) => {
-        const lootItem = DB_STATE.lootStore.find((l) => l.id === lootId);
-
-        if (lootItem) {
-          lootItem.status = "AVAILABLE";
-        }
-      });
-    }
-
+    clearMilestoneAndUnlockLoot(trajectoryId, milestoneId);
     return {
       success: true,
       trajectories: await ApiService.getTrajectories(),
     };
+  },
+
+  /**
+   * POST: Clear a milestone AND attach a log entry recording the session
+   * that achieved it. Reuses saveActivityLog's XP/attribute logic, then
+   */
+  clearMilestoneWithLog: async (
+    trajectoryId,
+    milestoneId,
+    resistance,
+    note,
+    durationHours = 0,
+  ) => {
+    await simulateNetworkLag();
+    createLogAndApplyXP({
+      trajectoryId,
+      resistance,
+      note,
+      durationHours,
+      milestoneId,
+    });
+    clearMilestoneAndUnlockLoot(trajectoryId, milestoneId);
+    return { success: true };
   },
 
   /**
@@ -244,4 +202,3 @@ export const ApiService = {
     };
   },
 };
-

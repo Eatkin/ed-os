@@ -6,6 +6,9 @@ const LogItem = ({ log }) => {
   const { styles, trajectories } = useAppState();
   const [expanded, setExpanded] = useState(false);
   const traj = trajectories[log.trajectoryId];
+  const milestone = log.milestoneId
+    ? traj?.milestones.find((m) => m.id === log.milestoneId)
+    : null;
 
   return (
     <TouchableOpacity
@@ -23,6 +26,18 @@ const LogItem = ({ log }) => {
       <Text style={styles.statLabel}>
         {log.resistance} · +{log.pointsAwarded} XP
       </Text>
+
+      {milestone && (
+        <Text style={[styles.statLabel, { color: "#FFB300", marginTop: 4 }]}>
+          🏆 MILESTONE: {milestone.text}
+        </Text>
+      )}
+
+      {log.bonusXP > 0 && (
+        <Text style={[styles.statLabel, { color: "#00FF00", marginTop: 4 }]}>
+          🎯 WEEKLY TARGET HIT · +{log.bonusXP} bonus XP
+        </Text>
+      )}
 
       {expanded && (
         <View style={{ marginTop: 8 }}>

@@ -13,6 +13,9 @@ export const AppStateProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [logModalVisible, setLogModalVisible] = useState(false);
   const [logModalTrajectoryId, setLogModalTrajectoryId] = useState(null);
+  const [milestoneModalVisible, setMilestoneModalVisible] = useState(false);
+  const [milestoneModalData, setMilestoneModalData] = useState(null); // { trajectoryId, milestoneId }
+
   const styles = baseStyles;
 
   // Single place that re-pulls everything from the mock backend.
@@ -47,6 +50,19 @@ export const AppStateProvider = ({ children }) => {
   const closeLogModal = () => {
     setLogModalVisible(false);
     setLogModalTrajectoryId(null);
+  };
+
+  /**
+   * Open / close milestone modal
+   */
+  const openMilestoneModal = (trajectoryId, milestoneId) => {
+    setMilestoneModalData({ trajectoryId, milestoneId });
+    setMilestoneModalVisible(true);
+  };
+
+  const closeMilestoneModal = () => {
+    setMilestoneModalVisible(false);
+    setMilestoneModalData(null);
   };
 
   /**
@@ -128,6 +144,10 @@ export const AppStateProvider = ({ children }) => {
         setLogModalVisible,
         openLogModal,
         closeLogModal,
+        milestoneModalData,
+        milestoneModalVisible,
+        openMilestoneModal,
+        closeMilestoneModal,
         styles,
         refreshAll,
       }}

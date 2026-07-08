@@ -1,4 +1,4 @@
-import { ScrollView, Text, TouchableOpacity } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LogItem from "./LogItem";
 import { useAppState } from "../../context/AppStateContext";
@@ -9,7 +9,7 @@ const AllLogsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <BackButton navigation={navigation}/>
+      <BackButton navigation={navigation} />
       <Text style={styles.title}>// ALL LOGS</Text>
       <ScrollView>
         {logs.length > 0 ? (

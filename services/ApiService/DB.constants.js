@@ -22,6 +22,7 @@ export const HEAT_THRESHOLDS = {
 };
 
 export const LEVEL_UP_XP = 500; // XP needed to level (can scale per level later)
+export const WEEKLY_TARGET_BONUS_XP = 50; // flat bonus for hitting weekly target
 
 let MOCK_DATA = {
   // User profile: global level, hero points, base attributes
@@ -293,6 +294,24 @@ let MOCK_DATA = {
       cost: null,
       status: "LOCKED",
       notes: "Something properly special — TBD",
+    },
+    {
+      id: "loot_boardgame_sky_team",
+      name: "Sky Team Boardgame",
+      category: "boardgames",
+      requiredMilestoneId: "m_board_games",
+      cost: 1000,
+      status: "LOCKED",
+      notes: "TBD based on board game availability",
+    },
+    {
+      id: "loot_boardgame_unmatched_adventures",
+      name: "Unmatched Adventures Tales to Amaze Boardgame",
+      category: "boardgames",
+      requiredMilestoneId: "m_board_games",
+      cost: 1000,
+      status: "LOCKED",
+      notes: "TBD based on board game availability",
     },
   ],
 };

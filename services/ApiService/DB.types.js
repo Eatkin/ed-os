@@ -1,3 +1,4 @@
+import { getWeeklyLogs } from "../../utils/trajectories";
 import { getLevelProgress } from "../../utils/xp";
 import { calculateHeat } from "./DB.utils";
 
@@ -138,22 +139,13 @@ export class Trajectory {
 
 export class EnrichedTrajectory extends Trajectory {
   constructor(trajData, logs = []) {
-    super(trajData); // Runs the Trajectory constructor
-
-    // Calculate dynamic properties
-    this.weeklyLogs = this._calculateWeeklyLogs(logs);
+    super(trajData);
+    this.weeklyLogs = getWeeklyLogs(this.id, logs);
     this.weeklyLogCount = this.weeklyLogs.length;
-  }
-
-  _calculateWeeklyLogs(logs) {
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    return logs.filter(
-      (log) =>
-        log.trajectoryId === this.id && new Date(log.timestamp) >= weekAgo,
-    );
   }
 }
 
+// Log class — add optional milestoneId
 export class Log {
   constructor({
     id,
@@ -162,13 +154,17 @@ export class Log {
     resistance,
     note,
     pointsAwarded,
+    milestoneId = null,
+    bonusXP = 0,
   } = {}) {
     this.id = id;
     this.trajectoryId = trajectoryId;
     this.timestamp = new Date(timestamp);
-    this.resistance = resistance; // Neutral, Easy, Hard, etc.
+    this.resistance = resistance;
     this.note = note;
     this.pointsAwarded = pointsAwarded;
+    this.milestoneId = milestoneId;
+    this.bonusXP = bonusXP;
   }
 
   get formattedTime() {
