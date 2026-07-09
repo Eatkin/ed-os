@@ -1,4 +1,4 @@
-import { Text } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppState } from "../../context/AppStateContext";
 import HomeScreenTitle from "./Title";
@@ -6,6 +6,7 @@ import HomeScreenStats from "./Stats";
 import HomeScreenAttributes from "./Attributes";
 import HomeScreenLogs from "./Logs";
 import HomeScreenTrajectories from "./Trajectories";
+import HomeScreenCommitments from "./Commitments";
 
 const HomeScreen = ({ navigation }) => {
   // Pull loading from context, not local state
@@ -22,11 +23,17 @@ const HomeScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>// EdOS</Text>
-      <HomeScreenTitle />
-      <HomeScreenStats />
-      <HomeScreenAttributes />
-      <HomeScreenTrajectories />
-      <HomeScreenLogs />
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <HomeScreenTitle />
+        <HomeScreenStats />
+        <HomeScreenAttributes />
+        <HomeScreenTrajectories />
+        <HomeScreenCommitments />
+        <HomeScreenLogs />
+      </ScrollView>
     </SafeAreaView>
   );
 };

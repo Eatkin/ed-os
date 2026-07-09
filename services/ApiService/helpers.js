@@ -32,6 +32,7 @@ export function createLogAndApplyXP({
   const multiplier = RESISTANCE_MULTIPLIERS[resistance];
   const pointsAwarded = Math.floor(baseXP * multiplier);
 
+
   const newLog = {
     id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
     trajectoryId,
@@ -48,16 +49,23 @@ export function createLogAndApplyXP({
 
   // Weekly target bonus: only fires the log that brings count to EXACTLY target,
   // so it's a one-time nudge per week, not a repeating bonus for every log after.
-  let bonusXP = 0;
+  // weekly target bonus (sets newLog.bonusXP)
+  let weeklyBonus = 0;
   if (traj.weeklyTarget > 0) {
     const weeklyCount = getWeeklyLogCount(trajectoryId, DB_STATE.logs);
     if (weeklyCount === traj.weeklyTarget) {
-      bonusXP = WEEKLY_TARGET_BONUS_XP;
-      newLog.bonusXP = bonusXP;
+      weeklyBonus = WEEKLY_TARGET_BONUS_XP;
     }
   }
+  newLog.bonusXP = weeklyBonus;
 
-  const totalGain = pointsAwarded + bonusXP;
+  // commitment bonus (adds onto newLog.bonusXP)
+  const fulfilledCommitment = tryFulfillCommitment(trajectoryId);
+  const commitmentBonus = fulfilledCommitment?.bonusXP ?? 0;
+  newLog.commitmentId = fulfilledCommitment?.id ?? null;
+  newLog.bonusXP += commitmentBonus;
+
+  const totalGain = pointsAwarded + newLog.bonusXP;
 
   DB_STATE.profile.heroPoints += totalGain;
   DB_STATE.profile.totalXP += totalGain;
@@ -65,6 +73,7 @@ export function createLogAndApplyXP({
   traj.xp += totalGain;
   traj.lastLoggedAt = new Date().toISOString();
 
+  // Level up and attribute xp
   while (traj.xp >= LEVEL_UP_XP) {
     traj.level += 1;
     traj.xp -= LEVEL_UP_XP;
@@ -103,4 +112,48 @@ export function clearMilestoneAndUnlockLoot(trajectoryId, milestoneId) {
   }
 
   return milestone;
+}
+
+
+export function createCommitment(trajectoryId, notes, expiresAt, bonusXP = 25) {
+  const traj = DB_STATE.trajectories[trajectoryId];
+  if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
+
+  const commitment = {
+    id: `commit_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    trajectoryId,
+    notes,
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(expiresAt).toISOString(),
+    bonusXP,
+  };
+
+  DB_STATE.commitments.unshift(commitment);
+  return commitment;
+}
+
+// Sweeps all PENDING commitments and flips any past their expiry to MISSED.
+// Call this at the start of any read/write that touches commitments,
+// so state is always accurate without needing a background timer.
+export function sweepExpiredCommitments() {
+  const now = new Date();
+  DB_STATE.commitments.forEach((c) => {
+    if (c.status === "PENDING" && new Date(c.expiresAt) < now) {
+      c.status = "MISSED";
+    }
+  });
+}
+
+// Called from inside createLogAndApplyXP after a log is saved —
+// checks for a live pending commitment on this trajectory and fulfills it.
+export function tryFulfillCommitment(trajectoryId) {
+  sweepExpiredCommitments();
+  const commitment = DB_STATE.commitments.find(
+    (c) => c.trajectoryId === trajectoryId && c.status === "PENDING",
+  );
+  if (!commitment) return null;
+
+  commitment.status = "FULFILLED";
+  return commitment;
 }

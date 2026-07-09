@@ -1,5 +1,12 @@
 import { Database } from "./DB.types";
 
+const getTomorrowEndOfDay = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString();
+};
+
 export const RESISTANCE_MULTIPLIERS = {
   Flow: 1.0,
   Neutral: 1.1,
@@ -41,6 +48,7 @@ let MOCK_DATA = {
 
   // Trajectories: skill/habit tracks with milestones
   // Each trajectory has its own level, XP, milestones, and heat
+  // TODO: Add trajectories for banjo, pen spinning, guitar
   trajectories: {
     cubing_3x3: {
       id: "cubing_3x3",
@@ -52,6 +60,7 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: "2026-07-03T18:00:00Z", // ISO string or null; used for heat calc
       weeklyTarget: 3,
+      minimumUnit: "One untimed slow solve",
       milestones: [
         {
           id: "m_cubing_sub25",
@@ -68,9 +77,9 @@ let MOCK_DATA = {
       ],
     },
 
-    juggling_5ball: {
-      id: "juggling_5ball",
-      name: "5-Ball Juggling",
+    juggling: {
+      id: "juggling",
+      name: "Juggling and circus arts",
       description: "Working towards clean cascades and tricks",
       friction: "medium",
       attributeWeights: { dexterity: 0.7, cognition: 0.3 },
@@ -78,18 +87,25 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: null,
       weeklyTarget: 2,
+      minimumUnit: "Five ball flash",
       milestones: [
         {
           id: "m_juggling_50clean",
-          text: "50 consecutive clean catches",
+          text: "50 consecutive clean catches in 5 ball cascade",
           cleared: false,
           unlocksLootIds: ["loot_juggling_balls"],
         },
         {
           id: "m_juggling_20h",
-          text: "20 hours logged",
+          text: "20 hours logged on circus planner",
           cleared: false,
           unlocksLootIds: ["loot_cork_mat"],
+        },
+        {
+          id: "m_juggling_cigar_box_routine",
+          text: "1 minute cigar box routine without dropping",
+          cleared: false,
+          unlocksLootIds: ["spinning_plates"],
         },
       ],
     },
@@ -104,6 +120,7 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: null,
       weeklyTarget: 2,
+      minimumUnit: "Go to park, put skates on.",
       milestones: [
         {
           id: "m_rollerblading_zigzag",
@@ -124,6 +141,7 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: null,
       weeklyTarget: 1,
+      minimumUnit: "Take unicycle out, free mount, go as far as you want.",
       milestones: [
         {
           id: "m_unicycle_30s_idle",
@@ -144,6 +162,7 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: null,
       weeklyTarget: 2,
+      minimumUnit: "One card pirouette",
       milestones: [
         {
           id: "m_cardistry_full_routine",
@@ -194,6 +213,36 @@ let MOCK_DATA = {
       ],
     },
   },
+
+  commitments: [
+    {
+      id: "commit_seed_1",
+      trajectoryId: "unicycling",
+      notes: "Take unicycle out, free mount, go as far as you want.",
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+      expiresAt: getTomorrowEndOfDay(),
+      bonusXP: 25,
+    },
+    {
+      id: "commit_seed_2",
+      trajectoryId: "cubing_3x3",
+      notes: "Just do 5 solves, doesn't matter how slow.",
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+      expiresAt: getTomorrowEndOfDay(),
+      bonusXP: 20,
+    },
+    {
+      id: "commit_seed_3",
+      trajectoryId: "juggling",
+      notes: "Pick up the balls, attempt one clean 5-throw flash.",
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+      expiresAt: getTomorrowEndOfDay(),
+      bonusXP: 20,
+    },
+  ],
 
   // Activity logs: every time you log something, create an entry here
   logs: [
@@ -313,7 +362,16 @@ let MOCK_DATA = {
       status: "LOCKED",
       notes: "TBD based on board game availability",
     },
-  ],
+    {
+      id: "loot_spinning_plates",
+      name: "A set of three spinning plates with sticks",
+      category: "circus",
+      required_milestone_id: "m_juggling_cigar_box_routine",
+      cost: 1000,
+      status: "LOCKED",
+      notes: "What up",
+    },
+  ]
 };
 
 export const DB_STATE = new Database(MOCK_DATA);

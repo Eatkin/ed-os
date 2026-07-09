@@ -8,6 +8,7 @@ import {
   DB_STATE,
 } from "./DB.constants";
 import {
+    Commitment,
   EnrichedTrajectory,
   Log,
   LootItem,
@@ -46,6 +47,7 @@ export const ApiService = {
       logs: DB_STATE.logs.map((l) => new Log(l)),
       loot: DB_STATE.lootStore.map((l) => new LootItem(l)),
       vault: DB_STATE.vault.map((v) => new VaultItem(v)),
+      commitments: DB_STATE.commitments.map((c) => new Commitment(c)),
     };
   },
 

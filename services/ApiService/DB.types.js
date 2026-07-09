@@ -1,5 +1,7 @@
+import { formatOrdinalDate } from "../../utils/collections";
 import { getWeeklyLogs } from "../../utils/trajectories";
 import { getLevelProgress } from "../../utils/xp";
+import { LEVEL_UP_XP } from "./DB.constants";
 import { calculateHeat } from "./DB.utils";
 
 export class HeroStats {
@@ -107,6 +109,7 @@ export class Trajectory {
     xp = 0,
     lastLoggedAt = null,
     weeklyTarget = 0,
+    minimumUnit = "",
     milestones = [],
   } = {}) {
     this.id = id;
@@ -118,6 +121,7 @@ export class Trajectory {
     this.xp = xp;
     this.lastLoggedAt = lastLoggedAt ? new Date(lastLoggedAt) : null;
     this.weeklyTarget = weeklyTarget;
+    this.minimumUnit = minimumUnit;
 
     // Ensure milestones are actual instances of the Milestone class
     this.milestones = milestones.map((m) => new Milestone(m));
@@ -126,6 +130,10 @@ export class Trajectory {
   // Handy helper: check if the trajectory is "hot" (logged recently)
   get temperature() {
     return calculateHeat(this.lastLoggedAt);
+  }
+
+  get xpProgress() {
+    return Math.min((this.xp / LEVEL_UP_XP) * 100, 100);
   }
 
   toJSON() {
@@ -173,6 +181,10 @@ export class Log {
       minute: "2-digit",
     });
   }
+
+  get formattedDate() {
+    return formatOrdinalDate(this.timestamp);
+  }
 }
 
 export class VaultItem {
@@ -210,6 +222,30 @@ export class LootItem {
   }
 }
 
+export class Commitment {
+  constructor({
+    id,
+    trajectoryId,
+    notes,
+    status = "PENDING", // PENDING | FULFILLED | MISSED
+    createdAt = new Date().toISOString(),
+    expiresAt,
+    bonusXP = 0,
+  } = {}) {
+    this.id = id;
+    this.trajectoryId = trajectoryId;
+    this.notes = notes;
+    this.status = status;
+    this.createdAt = new Date(createdAt);
+    this.expiresAt = new Date(expiresAt);
+    this.bonusXP = bonusXP;
+  }
+
+  get isExpired() {
+    return this.status === "PENDING" && new Date() > this.expiresAt;
+  }
+}
+
 // models/Database.js
 export class Database {
   constructor(data) {
@@ -217,6 +253,7 @@ export class Database {
     this.logs = data.logs.map((l) => new Log(l));
     this.vault = data.vault.map((v) => new VaultItem(v));
     this.lootStore = data.lootStore.map((l) => new LootItem(l));
+    this.commitments = data.commitments.map((c) => new Commitment(c));
 
     // The Database constructor now handles the enrichment
     this.trajectories = Object.entries(data.trajectories).reduce(

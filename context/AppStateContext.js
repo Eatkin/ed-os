@@ -8,6 +8,7 @@ export const AppStateProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [trajectories, setTrajectories] = useState({});
   const [logs, setLogs] = useState([]);
+  const [commitments, setCommitments] = useState([]);
   const [loot, setLoot] = useState([]);
   const [vault, setVault] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export const AppStateProvider = ({ children }) => {
     setProfile(data.profile);
     setTrajectories(data.trajectories);
     setLogs(data.logs);
+    setCommitments(data.commitments);
     setLoot(data.loot);
     setVault(data.vault);
   };
@@ -133,6 +135,7 @@ export const AppStateProvider = ({ children }) => {
         profile,
         trajectories,
         logs,
+        commitments,
         loot,
         vault,
         loading,

@@ -10,11 +10,6 @@ const LogItem = ({ log }) => {
     ? traj?.milestones.find((m) => m.id === log.milestoneId)
     : null;
 
-  const time = new Date(log.timestamp).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   const getStatusEmoji = (res) => {
     switch (res.toLowerCase()) {
       case "flow":
@@ -33,7 +28,7 @@ const LogItem = ({ log }) => {
   return (
     <View style={styles.logEntry}>
       <Text style={styles.logHeader}>
-        [{time}] {getStatusEmoji(log.resistance)}{" "}
+        [{log.formattedDate}] {getStatusEmoji(log.resistance)}{" "}
         {log.trajectoryId.toUpperCase()}
         {milestone ? " 🏆" : ""}
       </Text>

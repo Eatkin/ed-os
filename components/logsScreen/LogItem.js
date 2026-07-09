@@ -21,7 +21,7 @@ const LogItem = ({ log }) => {
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={styles.statValue}>{traj?.name ?? log.trajectoryId}</Text>
-        <Text style={styles.statLabel}>{log.formattedTime}</Text>
+        <Text style={styles.statLabel}>{log.formattedDate} {expanded && log.formattedTime}</Text>
       </View>
       <Text style={styles.statLabel}>
         {log.resistance} · +{log.pointsAwarded} XP
