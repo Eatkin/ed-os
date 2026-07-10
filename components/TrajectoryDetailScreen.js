@@ -2,10 +2,13 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppState } from "../context/AppStateContext";
 import BackButton from "./BackButton";
+import LogItem from "./shared/LogItem";
+import CommitmentItem from "./shared/CommitmentItem";
 
 const TrajectoryDetailScreen = ({ route, navigation }) => {
   const { trajectoryId } = route.params;
-  const { styles, trajectories, vault, openLogModal, openMilestoneModal } = useAppState();
+  const { styles, trajectories, vault, openLogModal, openMilestoneModal } =
+    useAppState();
   const traj = trajectories[trajectoryId];
 
   if (!traj) return null; // shouldn't happen, but guards a bad/stale id
@@ -42,6 +45,15 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
       </TouchableOpacity>
 
       <ScrollView style={{ marginTop: 10 }}>
+        {traj.activeCommitments.length > 0 && (
+          <View style={styles.card}>
+            <Text style={styles.subtitle}>ACTIVE COMMITMENTS</Text>
+            {traj.activeCommitments.map((c) => (
+              <CommitmentItem key={c.id} commitment={c} />
+            ))}
+          </View>
+        )}
+
         <Text style={styles.subtitle}>MILESTONES</Text>
         {traj.milestones.map((m) => (
           <TouchableOpacity
@@ -62,6 +74,15 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
               <View key={v.id} style={styles.card}>
                 <Text style={styles.statLabel}>{v.text}</Text>
               </View>
+            ))}
+          </>
+        )}
+
+        {traj.recentLogs.length > 0 && (
+          <>
+            <Text style={styles.subtitle}>RECENT LOGS</Text>
+            {traj.recentLogs.map((l) => (
+              <LogItem key={l.id} log={l} />
             ))}
           </>
         )}

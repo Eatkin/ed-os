@@ -1,13 +1,11 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { View, Text} from "react-native";
 import { useAppState } from "../../context/AppStateContext";
-import LogItem from "./LogItem";
+import LogItem from "../shared/LogItem";
 
 const PREVIEW_COUNT = 5;
 
 const HomeScreenLogs = () => {
   const { logs, styles } = useAppState();
-  const navigation = useNavigation();
   const previewLogs = logs.slice(0, PREVIEW_COUNT);
 
   return (
@@ -20,11 +18,6 @@ const HomeScreenLogs = () => {
         }}
       >
         <Text style={styles.monospaceText}>// RECENT_LOGS</Text>
-        {logs.length > 0 && (
-          <TouchableOpacity onPress={() => navigation.navigate("AllLogs")}>
-            <Text style={styles.statLabel}>VIEW ALL →</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {previewLogs.length > 0 ? (

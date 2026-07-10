@@ -21,11 +21,20 @@ const LogItem = ({ log }) => {
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={styles.statValue}>{traj?.name ?? log.trajectoryId}</Text>
-        <Text style={styles.statLabel}>{log.formattedDate} {expanded && log.formattedTime}</Text>
+        <Text style={styles.statLabel}>
+          {expanded && log.formattedDate} {log.formattedTime}
+        </Text>
       </View>
+
       <Text style={styles.statLabel}>
         {log.resistance} · +{log.pointsAwarded} XP
       </Text>
+
+      {log.commitmentId && (
+        <Text style={[styles.statLabel, { color: "#00FFAA", marginTop: 4 }]}>
+          ✅ Committed!
+        </Text>
+      )}
 
       {milestone && (
         <Text style={[styles.statLabel, { color: "#FFB300", marginTop: 4 }]}>
@@ -35,7 +44,7 @@ const LogItem = ({ log }) => {
 
       {log.bonusXP > 0 && (
         <Text style={[styles.statLabel, { color: "#00FF00", marginTop: 4 }]}>
-          🎯 WEEKLY TARGET HIT · +{log.bonusXP} bonus XP
+          🎯 BONUS · +{log.bonusXP} XP
         </Text>
       )}
 

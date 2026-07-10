@@ -2,6 +2,7 @@ import { AppStateProvider } from "./context/AppStateContext";
 import { NavigationShell } from "./components/nav/NavBar";
 import LogActivityModal from "./components/modals/LogActivityModal";
 import MilestoneCompleteModal from "./components/modals/MilestoneCompleteModal";
+import QuickActionSheet from "./components/QuickActionSheet";
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
       <NavigationShell />
       <LogActivityModal />
       <MilestoneCompleteModal />
+      <QuickActionSheet />
     </AppStateProvider>
   );
 }

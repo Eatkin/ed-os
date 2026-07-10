@@ -16,6 +16,10 @@ export const AppStateProvider = ({ children }) => {
   const [logModalTrajectoryId, setLogModalTrajectoryId] = useState(null);
   const [milestoneModalVisible, setMilestoneModalVisible] = useState(false);
   const [milestoneModalData, setMilestoneModalData] = useState(null); // { trajectoryId, milestoneId }
+  const [quickActionsVisible, setQuickActionsVisible] = useState(false);
+
+  const openQuickActions = () => setQuickActionsVisible(true);
+  const closeQuickActions = () => setQuickActionsVisible(false);
 
   const styles = baseStyles;
 
@@ -153,6 +157,9 @@ export const AppStateProvider = ({ children }) => {
         closeMilestoneModal,
         styles,
         refreshAll,
+        quickActionsVisible,
+        openQuickActions,
+        closeQuickActions,
       }}
     >
       {children}

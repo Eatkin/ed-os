@@ -157,3 +157,11 @@ export function tryFulfillCommitment(trajectoryId) {
   commitment.status = "FULFILLED";
   return commitment;
 }
+
+// helpers.js
+export function markCommitmentMissed(commitmentId) {
+  const commitment = DB_STATE.commitments.find((c) => c.id === commitmentId);
+  if (!commitment) throw new Error(`Commitment ${commitmentId} not found`);
+  commitment.status = "MISSED";
+  return commitment;
+}

@@ -1,5 +1,5 @@
 import { formatOrdinalDate } from "../../utils/collections";
-import { getWeeklyLogs } from "../../utils/trajectories";
+import { getActiveCommitmentsForTrajectory, getTrajectoryLogs, getWeeklyLogs } from "../../utils/trajectories";
 import { getLevelProgress } from "../../utils/xp";
 import { LEVEL_UP_XP } from "./DB.constants";
 import { calculateHeat } from "./DB.utils";
@@ -146,10 +146,21 @@ export class Trajectory {
 }
 
 export class EnrichedTrajectory extends Trajectory {
-  constructor(trajData, logs = []) {
+  constructor(trajData, logs = [], commitments = []) {
     super(trajData);
     this.weeklyLogs = getWeeklyLogs(this.id, logs);
     this.weeklyLogCount = this.weeklyLogs.length;
+    this.activeCommitments = getActiveCommitmentsForTrajectory(this.id, commitments);
+    this.recentLogs = getTrajectoryLogs(this.id, logs);
+  }
+}
+
+export class Note {
+  constructor({ id, trajectoryId = null, timestamp, note } = {}) {
+    this.id = id;
+    this.trajectoryId = trajectoryId;
+    this.timestamp = timestamp;
+    this.note = note;
   }
 }
 
@@ -204,6 +215,8 @@ export class LootItem {
     cost,
     status = "LOCKED",
     notes,
+    recurring = false,
+    purchased = 0,
   } = {}) {
     this.id = id;
     this.name = name;
@@ -212,6 +225,8 @@ export class LootItem {
     this.cost = cost;
     this.status = status;
     this.notes = notes;
+    this.recurring = recurring;
+    this.purchased = purchased;
   }
 
   // Helper to determine if the user CAN buy/unlock this

@@ -39,7 +39,7 @@ export const ApiService = {
       profile: new Profile(DB_STATE.profile),
       trajectories: Object.entries(DB_STATE.trajectories).reduce(
         (acc, [k, v]) => {
-          acc[k] = new EnrichedTrajectory(v, DB_STATE.logs);
+          acc[k] = new EnrichedTrajectory(v, DB_STATE.logs, DB_STATE.commitments);
           return acc;
         },
         {},
@@ -95,6 +95,12 @@ export const ApiService = {
     await simulateNetworkLag();
     createLogAndApplyXP({ trajectoryId, resistance, note, durationHours });
     return { success: true, logs: await ApiService.getLogs() };
+  },
+
+  missCommitment: async (commitmentId) => {
+    await simulateNetworkLag();
+    markCommitmentMissed(commitmentId);
+    return { success: true };
   },
 
   /**
@@ -162,7 +168,11 @@ export const ApiService = {
       DB_STATE.profile.heroPoints -= item.cost;
     }
 
-    item.status = "OWNED";
+    if (!item.recurring) {
+      item.status = "OWNED";
+    } else {
+      item.purchased += 1;
+    }
 
     return {
       success: true,

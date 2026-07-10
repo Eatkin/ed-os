@@ -50,7 +50,7 @@ const CustomCenterButton = ({ onPress }) => (
 );
 
 export function NavigationShell() {
-  const { styles, openLogModal } = useAppState(); // openLogModal: fn that shows the Add Log modal
+  const { styles, openQuickActions } = useAppState(); // openLogModal: fn that shows the Add Log modal
 
   return (
     <NavigationContainer>
@@ -84,12 +84,14 @@ export function NavigationShell() {
         {/* Center "screen" is never actually navigated to — it just triggers the modal */}
         <Tab.Screen
           name="AddLog"
-          component={NullScreen} // placeholder, unreachable
+          component={NullScreen}
           options={{
-            tabBarButton: () => <CustomCenterButton onPress={() => openLogModal()} />,
+            tabBarButton: () => (
+              <CustomCenterButton onPress={() => openQuickActions()} />
+            ),
           }}
           listeners={{
-            tabPress: (e) => e.preventDefault(), // block default nav to placeholder
+            tabPress: (e) => e.preventDefault(),
           }}
         />
         <Tab.Screen
