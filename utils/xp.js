@@ -1,33 +1,36 @@
-export const BASE_LEVEL_XP = 500; // XP needed for level 1
-export const XP_STEP = 100; // extra XP required per level thereafter
+import {
+  ATTRIBUTE_LEVEL_UP_THRESHOLD,
+  ATTRIBUTE_XP_RATE,
+  BASE_LEVEL_XP,
+  XP_STEP,
+} from "../services/ApiService/DB.constants";
 
-// Total XP needed to go from level n to level n+1
-export function xpForLevel(level) {
-  return BASE_LEVEL_XP + (level - 1) * XP_STEP;
+export function xpForLevel(level, attribute = false) {
+  const levelXp = attribute ? ATTRIBUTE_LEVEL_UP_THRESHOLD : BASE_LEVEL_XP;
+  const xpStep = attribute ? XP_STEP * ATTRIBUTE_XP_RATE : XP_STEP;
+  return levelXp + (level - 1) * xpStep;
 }
 
-// Total cumulative XP needed to reach a given level from scratch
-export function totalXPForLevel(level) {
+export function totalXPForLevel(level, attribute = false) {
   let total = 0;
-  for (let i = 1; i < level; i++) total += xpForLevel(i);
+  for (let i = 1; i < level; i++) total += xpForLevel(i, attribute);
   return total;
 }
 
-// Given total accumulated XP, derive current level + progress toward next
-export function getLevelProgress(totalXP) {
+export function getLevelProgress(totalXP, attribute = false) {
   let level = 1;
   let remaining = totalXP;
 
-  while (remaining >= xpForLevel(level)) {
-    remaining -= xpForLevel(level);
+  while (remaining >= xpForLevel(level, attribute) && remaining > 0) {
+    remaining -= xpForLevel(level, attribute);
     level++;
   }
 
-  const currentLevelXP = xpForLevel(level);
+  const currentLevelXP = xpForLevel(level, attribute);
   return {
     level,
     currentXP: remaining,
     xpToNextLevel: currentLevelXP,
-    xpProgress: Math.round((remaining / currentLevelXP) * 100), // for your bar %
+    xpProgress: Math.round((remaining / currentLevelXP) * 100),
   };
 }

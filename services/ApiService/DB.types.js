@@ -1,56 +1,31 @@
 import { formatOrdinalDate } from "../../utils/collections";
-import { getActiveCommitmentsForTrajectory, getTrajectoryLogs, getWeeklyLogs } from "../../utils/trajectories";
+import {
+  getActiveCommitmentsForTrajectory,
+  getTrajectoryLogs,
+  getWeeklyLogs,
+} from "../../utils/trajectories";
 import { getLevelProgress } from "../../utils/xp";
 import { LEVEL_UP_XP } from "./DB.constants";
 import { calculateHeat } from "./DB.utils";
 
+export class Attribute {
+  constructor({ id, label, emoji, val } = {}) {
+    this.id = id;
+    this.label = label;
+    this.emoji = emoji;
+    this.val = val;
+  }
+  get progress() {
+    return getLevelProgress(this.val, true); // { level, currentXP, xpToNextLevel, xpProgress }
+  }
+}
+
 export class HeroStats {
-  constructor({
-    cognition = 0,
-    dexterity = 0,
-    balance = 0,
-    endurance = 0,
-  } = {}) {
-    this.cognition = cognition;
-    this.dexterity = dexterity;
-    this.balance = balance;
-    this.endurance = endurance;
+  constructor(attributes = []) {
+    this.list = attributes.map((a) => new Attribute(a));
   }
-
-  // Returns an array of objects to map over in your UI
-  get list() {
-    return [
-      {
-        key: "cognition",
-        label: "COGNITION",
-        emoji: "🧠",
-        val: this.cognition,
-      },
-      {
-        key: "dexterity",
-        label: "DEXTERITY",
-        emoji: "⚡",
-        val: this.dexterity,
-      },
-      { key: "balance", label: "BALANCE", emoji: "⚖️", val: this.balance },
-      {
-        key: "endurance",
-        label: "ENDURANCE",
-        emoji: "🔋",
-        val: this.endurance,
-      },
-    ];
-  }
-
   get maxVal() {
-    // Default to 1 if no attributes given
-    return Math.max(
-      this.cognition,
-      this.dexterity,
-      this.balance,
-      this.endurance,
-      1,
-    );
+    return this.list.length ? Math.max(...this.list.map((a) => a.val)) : 0;
   }
 }
 
@@ -59,15 +34,13 @@ export class Profile {
     name = "Unknown",
     totalXP = 0,
     heroPoints = 0,
-    attributes = {},
+    attributes = [],
   } = {}) {
     this.name = name;
     this.totalXP = totalXP;
     this.heroPoints = heroPoints;
-    // Instantiate the nested class so you always have access to methods on attributes
     this.attributes = new HeroStats(attributes);
   }
-
   get levelProgress() {
     return getLevelProgress(this.totalXP);
   }
@@ -111,6 +84,8 @@ export class Trajectory {
     weeklyTarget = 0,
     minimumUnit = "",
     milestones = [],
+    archived = false,
+    archivedAt = null,
   } = {}) {
     this.id = id;
     this.name = name;
@@ -122,6 +97,8 @@ export class Trajectory {
     this.lastLoggedAt = lastLoggedAt ? new Date(lastLoggedAt) : null;
     this.weeklyTarget = weeklyTarget;
     this.minimumUnit = minimumUnit;
+    this.archived = archived;
+    this.archivedAt = archivedAt;
 
     // Ensure milestones are actual instances of the Milestone class
     this.milestones = milestones.map((m) => new Milestone(m));
@@ -150,7 +127,10 @@ export class EnrichedTrajectory extends Trajectory {
     super(trajData);
     this.weeklyLogs = getWeeklyLogs(this.id, logs);
     this.weeklyLogCount = this.weeklyLogs.length;
-    this.activeCommitments = getActiveCommitmentsForTrajectory(this.id, commitments);
+    this.activeCommitments = getActiveCommitmentsForTrajectory(
+      this.id,
+      commitments,
+    );
     this.recentLogs = getTrajectoryLogs(this.id, logs);
   }
 }
@@ -273,7 +253,7 @@ export class Database {
     // The Database constructor now handles the enrichment
     this.trajectories = Object.entries(data.trajectories).reduce(
       (acc, [key, val]) => {
-        acc[key] = new EnrichedTrajectory(val, this.logs);
+        acc[key] = new EnrichedTrajectory(val, this.logs, this.commitments);
         return acc;
       },
       {},

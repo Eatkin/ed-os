@@ -5,6 +5,7 @@ import {
   LEVEL_UP_XP,
   DB_STATE,
   WEEKLY_TARGET_BONUS_XP,
+  ATTRIBUTE_XP_RATE,
 } from "./DB.constants";
 
 // Creates a log entry, applies XP to profile + trajectory, and handles
@@ -31,7 +32,6 @@ export function createLogAndApplyXP({
   const baseXP = FRICTION_BASE_XP[traj.friction] || 10;
   const multiplier = RESISTANCE_MULTIPLIERS[resistance];
   const pointsAwarded = Math.floor(baseXP * multiplier);
-
 
   const newLog = {
     id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
@@ -73,22 +73,42 @@ export function createLogAndApplyXP({
   traj.xp += totalGain;
   traj.lastLoggedAt = new Date().toISOString();
 
-  // Level up and attribute xp
+  // Attribute xp
+  const totalWeight = Object.values(traj.attributeWeights).reduce(
+    (a, b) => a + b,
+    0,
+  );
+
+  if (totalWeight > 0) {
+    Object.entries(traj.attributeWeights).forEach(([attrId, weight]) => {
+      const gain = Math.floor(
+        totalGain * (weight / totalWeight) * ATTRIBUTE_XP_RATE,
+      );
+      if (gain > 0) {
+        const existing = DB_STATE.profile.attributes.find(
+          (a) => a.id === attrId,
+        );
+        if (existing) {
+          existing.val += gain;
+        } else {
+          // attributeWeights referenced an attribute that doesn't exist in the
+          // profile's seed list yet — create it on the fly so nothing silently drops
+          DB_STATE.profile.attributes.push({
+            id: attrId,
+            label: attrId.toUpperCase(),
+            emoji: "❔",
+            val: gain,
+          });
+        }
+      }
+    });
+  }
+
+  // Level-up loop
+  // Trajectories have flat level up i.e. no level scaling
   while (traj.xp >= LEVEL_UP_XP) {
     traj.level += 1;
     traj.xp -= LEVEL_UP_XP;
-
-    const totalWeight = Object.values(traj.attributeWeights).reduce(
-      (a, b) => a + b,
-      0,
-    );
-    Object.entries(traj.attributeWeights).forEach(([attr, weight]) => {
-      const gain = Math.floor(
-        (totalGain / LEVEL_UP_XP) * (weight / totalWeight),
-      );
-      DB_STATE.profile.attributes[attr] =
-        (DB_STATE.profile.attributes[attr] || 0) + gain;
-    });
   }
 
   return newLog;
@@ -114,8 +134,7 @@ export function clearMilestoneAndUnlockLoot(trajectoryId, milestoneId) {
   return milestone;
 }
 
-
-export function createCommitment(trajectoryId, notes, expiresAt, bonusXP = 25) {
+export function createCommitment(trajectoryId, notes, expiresAt, bonusXP = 0) {
   const traj = DB_STATE.trajectories[trajectoryId];
   if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
 
@@ -125,7 +144,7 @@ export function createCommitment(trajectoryId, notes, expiresAt, bonusXP = 25) {
     notes,
     status: "PENDING",
     createdAt: new Date().toISOString(),
-    expiresAt: new Date(expiresAt).toISOString(),
+    expiresAt,
     bonusXP,
   };
 
@@ -158,10 +177,17 @@ export function tryFulfillCommitment(trajectoryId) {
   return commitment;
 }
 
-// helpers.js
 export function markCommitmentMissed(commitmentId) {
   const commitment = DB_STATE.commitments.find((c) => c.id === commitmentId);
   if (!commitment) throw new Error(`Commitment ${commitmentId} not found`);
   commitment.status = "MISSED";
   return commitment;
+}
+
+export function archiveTrajectory(trajectoryId, archived = true) {
+  const traj = DB_STATE.trajectories[trajectoryId];
+  if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
+  traj.archived = archived;
+  traj.archivedAt = archived ? new Date().toISOString() : null;
+  return traj;
 }

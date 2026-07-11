@@ -29,8 +29,8 @@ const HomeScreen = ({ navigation }) => {
       >
         <HomeScreenTitle />
         <HomeScreenStats />
-        <HomeScreenAttributes />
         <HomeScreenTrajectories />
+        <HomeScreenAttributes />
         <HomeScreenCommitments />
         <HomeScreenLogs />
       </ScrollView>

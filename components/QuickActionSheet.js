@@ -20,7 +20,7 @@ const QuickActionSheet = () => {
     {
       label: "Make a Commitment",
       icon: (color) => <TargetIcon color={color} size={20} />,
-      onPress: () => openCommitmentModal?.() ?? console.log("open commitment modal"),
+      onPress: () => openCommitmentModal(),
     },
     {
       label: "Create a Milestone",
@@ -42,6 +42,7 @@ const QuickActionSheet = () => {
       icon: (color) => <BulbIcon color={color} size={20} />,
       onPress: () => console.log("add note — not wired yet"),
     },
+    // TODO: View all milestones, view notes
   ];
 
   const handlePress = (action) => {

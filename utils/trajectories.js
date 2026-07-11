@@ -38,3 +38,21 @@ export function getTrajectoryLogs(trajectoryId, logs, limit = 10) {
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .slice(0, limit);
 }
+
+export function getArchiveStats(trajectoryId, logs) {
+  const trajLogs = logs.filter((l) => l.trajectoryId === trajectoryId);
+  if (trajLogs.length === 0) return null;
+
+  const sorted = [...trajLogs].sort(
+    (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+  );
+
+  const totalXP = trajLogs.reduce((sum, l) => sum + l.pointsAwarded + (l.bonusXP || 0), 0);
+
+  return {
+    totalXP,
+    totalLogs: trajLogs.length,
+    startDate: sorted[0].timestamp,
+    endDate: sorted[sorted.length - 1].timestamp,
+  };
+}

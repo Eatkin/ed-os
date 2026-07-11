@@ -4,18 +4,21 @@
  * Heat-based trajectory tracking: no guilt, no decay, just visibility
  */
 
+import { DB_STATE } from "./DB.constants";
 import {
-  DB_STATE,
-} from "./DB.constants";
-import {
-    Commitment,
+  Database,
   EnrichedTrajectory,
   Log,
   LootItem,
   Profile,
-  VaultItem,
 } from "./DB.types";
-import { clearMilestoneAndUnlockLoot, createLogAndApplyXP } from "./helpers";
+import {
+  archiveTrajectory,
+  clearMilestoneAndUnlockLoot,
+  createCommitment,
+  createLogAndApplyXP,
+  markCommitmentMissed,
+} from "./helpers";
 // ============================================================================
 // HELPERS
 // ============================================================================
@@ -34,21 +37,7 @@ function simulateNetworkLag() {
 export const ApiService = {
   fetchAllData: async () => {
     await simulateNetworkLag();
-    // Assuming DB_STATE is available here or imported
-    return {
-      profile: new Profile(DB_STATE.profile),
-      trajectories: Object.entries(DB_STATE.trajectories).reduce(
-        (acc, [k, v]) => {
-          acc[k] = new EnrichedTrajectory(v, DB_STATE.logs, DB_STATE.commitments);
-          return acc;
-        },
-        {},
-      ),
-      logs: DB_STATE.logs.map((l) => new Log(l)),
-      loot: DB_STATE.lootStore.map((l) => new LootItem(l)),
-      vault: DB_STATE.vault.map((v) => new VaultItem(v)),
-      commitments: DB_STATE.commitments.map((c) => new Commitment(c)),
-    };
+    return new Database(DB_STATE);
   },
 
   // --- Getters ---
@@ -95,6 +84,17 @@ export const ApiService = {
     await simulateNetworkLag();
     createLogAndApplyXP({ trajectoryId, resistance, note, durationHours });
     return { success: true, logs: await ApiService.getLogs() };
+  },
+
+  createCommitment: async (trajectoryId, notes, expiresAt, bonusXP = 0) => {
+    await simulateNetworkLag();
+    const commitment = createCommitment(
+      trajectoryId,
+      notes,
+      expiresAt,
+      bonusXP,
+    );
+    return { success: true, commitment };
   },
 
   missCommitment: async (commitmentId) => {
@@ -212,5 +212,13 @@ export const ApiService = {
       success: true,
       vault: await ApiService.getVault(),
     };
+  },
+  /**
+   * PATCH: Set trajectory status
+   */
+  setTrajectoryArchived: async (trajectoryId, archived = true) => {
+    await simulateNetworkLag();
+    archiveTrajectory(trajectoryId, archived);
+    return { success: true };
   },
 };

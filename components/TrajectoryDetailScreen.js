@@ -4,16 +4,38 @@ import { useAppState } from "../context/AppStateContext";
 import BackButton from "./BackButton";
 import LogItem from "./shared/LogItem";
 import CommitmentItem from "./shared/CommitmentItem";
+import { ApiService } from "../services/ApiService/ApiService";
 
 const TrajectoryDetailScreen = ({ route, navigation }) => {
   const { trajectoryId } = route.params;
-  const { styles, trajectories, vault, openLogModal, openMilestoneModal } =
-    useAppState();
+  const {
+    refreshAll,
+    styles,
+    trajectories,
+    vault,
+    openLogModal,
+    openMilestoneModal,
+    openConfirmModal,
+    openCommitmentModal,
+  } = useAppState();
   const traj = trajectories[trajectoryId];
 
   if (!traj) return null; // shouldn't happen, but guards a bad/stale id
 
   const trajVaultEntries = vault.filter((v) => v.trajectoryId === trajectoryId);
+
+  const handleArchive = () => {
+    openConfirmModal({
+      title: "Archive this trajectory?",
+      message: `"${traj.name}" will move to your archive with its final stats.`,
+      confirmLabel: "Archive",
+      onConfirm: async () => {
+        await ApiService.setTrajectoryArchived(trajectoryId, true);
+        await refreshAll();
+        navigation.goBack();
+      },
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -37,12 +59,25 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
         </Text>
       </View>
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => openLogModal(trajectoryId)}
-      >
-        <Text style={styles.statValue}>+ LOG ACTIVITY</Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: "row" }}>
+        <TouchableOpacity
+          style={[styles.card, { flex: 1, marginRight: 6 }]}
+          onPress={() => openLogModal(trajectoryId)}
+        >
+          <Text style={[styles.statValue, { textAlign: "center" }]}>
+            + LOG ACTIVITY
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.card, { flex: 1, marginLeft: 6 }]}
+          onPress={() => openCommitmentModal(trajectoryId)}
+        >
+          <Text style={[styles.statValue, { textAlign: "center" }]}>
+            + COMMITMENT
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView style={{ marginTop: 10 }}>
         {traj.activeCommitments.length > 0 && (
@@ -87,6 +122,15 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
           </>
         )}
       </ScrollView>
+
+      <TouchableOpacity
+        onPress={handleArchive}
+        style={{ marginTop: 24, marginBottom: 12, alignItems: "center" }}
+      >
+        <Text style={[styles.statLabel, { color: "#555" }]}>
+          ARCHIVE THIS TRAJECTORY
+        </Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

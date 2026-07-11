@@ -1,6 +1,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { ApiService } from "../services/ApiService/ApiService";
 import baseStyles from "../style/base";
+import { useConfirmModalState } from "./appStateContextHelpers/ConfirmModal";
+import { useQuickActionsState } from "./appStateContextHelpers/QuickActions";
+import { useLogState } from "./appStateContextHelpers/LogModal";
+import { useMilestoneState } from "./appStateContextHelpers/MilestoneModal";
+import { useCommitmentState } from "./appStateContextHelpers/CommitmentModal";
 
 const AppStateContext = createContext();
 
@@ -12,15 +17,12 @@ export const AppStateProvider = ({ children }) => {
   const [loot, setLoot] = useState([]);
   const [vault, setVault] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [logModalVisible, setLogModalVisible] = useState(false);
-  const [logModalTrajectoryId, setLogModalTrajectoryId] = useState(null);
-  const [milestoneModalVisible, setMilestoneModalVisible] = useState(false);
-  const [milestoneModalData, setMilestoneModalData] = useState(null); // { trajectoryId, milestoneId }
-  const [quickActionsVisible, setQuickActionsVisible] = useState(false);
 
-  const openQuickActions = () => setQuickActionsVisible(true);
-  const closeQuickActions = () => setQuickActionsVisible(false);
-
+  const logModalSlice = useLogState();
+  const milestoneModalSlice = useMilestoneState();
+  const quickActionsSlice = useQuickActionsState();
+  const confirmModalSlice = useConfirmModalState();
+  const commitmentModalSlice = useCommitmentState();
   const styles = baseStyles;
 
   // Single place that re-pulls everything from the mock backend.
@@ -42,34 +44,6 @@ export const AppStateProvider = ({ children }) => {
       setLoading(false);
     })();
   }, []);
-
-  /**
-   * Open / close log modal
-   */
-  // trajectoryId is optional — set when opened from a detail screen (pre-picked),
-  // left undefined/null when opened from the + tab (shows the picker grid)
-  const openLogModal = (trajectoryId = null) => {
-    setLogModalTrajectoryId(trajectoryId);
-    setLogModalVisible(true);
-  };
-
-  const closeLogModal = () => {
-    setLogModalVisible(false);
-    setLogModalTrajectoryId(null);
-  };
-
-  /**
-   * Open / close milestone modal
-   */
-  const openMilestoneModal = (trajectoryId, milestoneId) => {
-    setMilestoneModalData({ trajectoryId, milestoneId });
-    setMilestoneModalVisible(true);
-  };
-
-  const closeMilestoneModal = () => {
-    setMilestoneModalVisible(false);
-    setMilestoneModalData(null);
-  };
 
   /**
    * Log an activity: trajectoryId, resistance ("Flow", "Neutral", "Resistant", "Soul-Crushing"), note
@@ -146,20 +120,13 @@ export const AppStateProvider = ({ children }) => {
         logActivity,
         clearMilestone,
         purchaseItem,
-        logModalVisible,
-        logModalTrajectoryId,
-        setLogModalVisible,
-        openLogModal,
-        closeLogModal,
-        milestoneModalData,
-        milestoneModalVisible,
-        openMilestoneModal,
-        closeMilestoneModal,
         styles,
         refreshAll,
-        quickActionsVisible,
-        openQuickActions,
-        closeQuickActions,
+        ...milestoneModalSlice,
+        ...logModalSlice,
+        ...quickActionsSlice,
+        ...confirmModalSlice,
+        ...commitmentModalSlice,
       }}
     >
       {children}

@@ -8,12 +8,12 @@ import {
   VaultIcon,
   BulbIcon,
 } from "../../assets/vectors";
-import WantsScreen from "../screens/WantsScreen";
 import PromptsScreen from "../screens/PromptsScreen";
 import { useAppState } from "../../context/AppStateContext";
 import NullScreen from "../screens/NullScreen";
 import { GoalsStack } from "../goalsScreen/GoalsStack";
 import { HomeStack } from "../homeScreen/HomeStack";
+import WantsScreen from "../wantsScreen/WantsScreen";
 
 const Tab = createBottomTabNavigator();
 
