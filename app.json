@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "EdOsCompanion",
-    "slug": "EdOsCompanion",
+    "slug": "edos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,10 +15,17 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.edsteamofdoom.edos"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5ba1c6d7-0212-43d3-9106-d9b6730952b8"
+      }
+    },
+    "owner": "eds-team-of-doom"
   }
 }

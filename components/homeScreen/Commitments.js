@@ -33,7 +33,7 @@ const HomeScreenCommitments = () => {
         ? activeCommitments.map((entry) => (
             <CommitmentItem key={entry.id} commitment={entry} />
           ))
-        : null}
+        : <Text style={styles.monospaceText}>&gt; NO_COMMITMENTS_FOUND</Text>}
     </View>
   );
 };
