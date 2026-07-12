@@ -191,3 +191,57 @@ export function archiveTrajectory(trajectoryId, archived = true) {
   traj.archivedAt = archived ? new Date().toISOString() : null;
   return traj;
 }
+
+export function createNote(trajectoryId, note) {
+  const newNote = {
+    id: `note_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    trajectoryId: trajectoryId ?? null,
+    timestamp: new Date().toISOString(),
+    note,
+  };
+  DB_STATE.notes.unshift(newNote);
+  return newNote;
+}
+
+export function createMilestone(trajectoryId, text) {
+  const traj = DB_STATE.trajectories[trajectoryId];
+  if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
+
+  const milestone = {
+    id: `m_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    text,
+    cleared: false,
+    unlocksLootIds: [],
+  };
+
+  traj.milestones.push(milestone);
+  return milestone;
+}
+
+export function createLootItem({ name, category, cost, requiredMilestoneId, notes }) {
+  const lootItem = {
+    id: `loot_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    name,
+    category,
+    cost,
+    requiredMilestoneId,
+    status: requiredMilestoneId ? "LOCKED" : "AVAILABLE", // no milestone = free/available immediately
+    notes,
+  };
+
+  DB_STATE.lootStore.push(lootItem);
+
+  // If it's tied to a milestone, register it on that milestone's unlocksLootIds
+  // so clearMilestoneAndUnlockLoot picks it up correctly later
+  if (requiredMilestoneId) {
+    for (const traj of Object.values(DB_STATE.trajectories)) {
+      const m = traj.milestones.find((m) => m.id === requiredMilestoneId);
+      if (m) {
+        m.unlocksLootIds.push(lootItem.id);
+        break;
+      }
+    }
+  }
+
+  return lootItem;
+}

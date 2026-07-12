@@ -6,7 +6,15 @@ import LootItem from "../shared/LootItem";
 const STATUS_ORDER = { AVAILABLE: 0, LOCKED: 1, OWNED: 2 };
 
 const WantsScreen = () => {
-  const { styles, loot } = useAppState();
+  const { styles, loot, loading } = useAppState();
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}>// LOADING...</Text>
+      </SafeAreaView>
+    );
+  }
 
   const sortedLoot = [...loot].sort(
     (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],

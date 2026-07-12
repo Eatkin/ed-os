@@ -7,6 +7,7 @@ import HomeScreenAttributes from "./Attributes";
 import HomeScreenLogs from "./Logs";
 import HomeScreenTrajectories from "./Trajectories";
 import HomeScreenCommitments from "./Commitments";
+import HomeScreenNotes from "./Notes";
 
 const HomeScreen = ({ navigation }) => {
   // Pull loading from context, not local state
@@ -33,6 +34,7 @@ const HomeScreen = ({ navigation }) => {
         <HomeScreenAttributes />
         <HomeScreenCommitments />
         <HomeScreenLogs />
+        <HomeScreenNotes />
       </ScrollView>
     </SafeAreaView>
   );

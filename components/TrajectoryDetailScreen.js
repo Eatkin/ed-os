@@ -1,10 +1,10 @@
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppState } from "../context/AppStateContext";
-import BackButton from "./BackButton";
 import LogItem from "./shared/LogItem";
 import CommitmentItem from "./shared/CommitmentItem";
 import { ApiService } from "../services/ApiService/ApiService";
+import BackButton from "./shared/BackButton";
 
 const TrajectoryDetailScreen = ({ route, navigation }) => {
   const { trajectoryId } = route.params;

@@ -14,6 +14,7 @@ import NullScreen from "../screens/NullScreen";
 import { GoalsStack } from "../goalsScreen/GoalsStack";
 import { HomeStack } from "../homeScreen/HomeStack";
 import WantsScreen from "../wantsScreen/WantsScreen";
+import { navigationRef } from "../../navigation/navigationRef";
 
 const Tab = createBottomTabNavigator();
 
@@ -53,7 +54,7 @@ export function NavigationShell() {
   const { styles, openQuickActions } = useAppState(); // openLogModal: fn that shows the Add Log modal
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,

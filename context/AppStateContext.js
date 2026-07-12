@@ -6,6 +6,10 @@ import { useQuickActionsState } from "./appStateContextHelpers/QuickActions";
 import { useLogState } from "./appStateContextHelpers/LogModal";
 import { useMilestoneState } from "./appStateContextHelpers/MilestoneModal";
 import { useCommitmentState } from "./appStateContextHelpers/CommitmentModal";
+import { useNoteState } from "./appStateContextHelpers/NoteModal";
+import { useMilestoneAdderState } from "./appStateContextHelpers/MilestoneAdderModal";
+import { useLootAdderState } from "./appStateContextHelpers/LootAdderModal";
+import { initializeDB } from "../services/ApiService/DB.state";
 
 const AppStateContext = createContext();
 
@@ -13,6 +17,7 @@ export const AppStateProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [trajectories, setTrajectories] = useState({});
   const [logs, setLogs] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [commitments, setCommitments] = useState([]);
   const [loot, setLoot] = useState([]);
   const [vault, setVault] = useState([]);
@@ -23,6 +28,9 @@ export const AppStateProvider = ({ children }) => {
   const quickActionsSlice = useQuickActionsState();
   const confirmModalSlice = useConfirmModalState();
   const commitmentModalSlice = useCommitmentState();
+  const noteModalSlice = useNoteState();
+  const milestoneAdderModalSlice = useMilestoneAdderState();
+  const lootAdderModalSlice = useLootAdderState();
   const styles = baseStyles;
 
   // Single place that re-pulls everything from the mock backend.
@@ -32,14 +40,16 @@ export const AppStateProvider = ({ children }) => {
     setProfile(data.profile);
     setTrajectories(data.trajectories);
     setLogs(data.logs);
+    setNotes(data.notes);
     setCommitments(data.commitments);
-    setLoot(data.loot);
+    setLoot(data.lootStore);
     setVault(data.vault);
   };
 
   useEffect(() => {
     (async () => {
       setLoading(true);
+      await initializeDB();
       await refreshAll();
       setLoading(false);
     })();
@@ -116,6 +126,7 @@ export const AppStateProvider = ({ children }) => {
         commitments,
         loot,
         vault,
+        notes,
         loading,
         logActivity,
         clearMilestone,
@@ -127,6 +138,9 @@ export const AppStateProvider = ({ children }) => {
         ...quickActionsSlice,
         ...confirmModalSlice,
         ...commitmentModalSlice,
+        ...noteModalSlice,
+        ...milestoneAdderModalSlice,
+        ...lootAdderModalSlice,
       }}
     >
       {children}

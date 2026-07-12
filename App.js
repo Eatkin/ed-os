@@ -5,6 +5,9 @@ import MilestoneCompleteModal from "./components/modals/MilestoneCompleteModal";
 import QuickActionSheet from "./components/QuickActionSheet";
 import ConfirmModal from "./components/modals/ConfirmModal";
 import CommitmentModal from "./components/modals/MakeCommitmentModal";
+import NoteModal from "./components/modals/CreateNoteModal";
+import LootAdderModal from "./components/modals/LootAdderModal";
+import MilestoneAdderModal from "./components/modals/MilestoneAdderModal";
 
 export default function App() {
   return (
@@ -14,7 +17,10 @@ export default function App() {
       <MilestoneCompleteModal />
       <QuickActionSheet />
       <ConfirmModal />
-    <CommitmentModal />
+      <CommitmentModal />
+      <NoteModal />
+      <LootAdderModal />
+      <MilestoneAdderModal />
     </AppStateProvider>
   );
 }

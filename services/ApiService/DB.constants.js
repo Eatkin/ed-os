@@ -46,7 +46,7 @@ const ATTRIBUTES = [
   { id: "endurance", label: "ENDURANCE", emoji: "🔋", val: 0 },
 ];
 
-let MOCK_DATA = {
+export const MOCK_DATA = {
   // User profile: global level, hero points, base attributes
   profile: {
     name: "Ed",
@@ -79,7 +79,7 @@ let MOCK_DATA = {
         },
         {
           id: "m_cubing_4x4_sub2min",
-          text: "Sub-2-minute 4x4 solve",
+          text: "Sub 2 min ao100 for 4x4",
           cleared: false,
           unlocksLootIds: ["loot_qiyi_smart_timer"],
         },
@@ -157,7 +157,7 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: null,
       weeklyTarget: 1,
-      minimumUnit: "Five minutes of picking",
+      minimumUnit: "Tune the banjo",
       milestones: [],
     },
 
@@ -171,7 +171,7 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: null,
       weeklyTarget: 1,
-      minimumUnit: "Five minutes of playing",
+      minimumUnit: "Tune the guitar",
       milestones: [],
     },
 
@@ -185,7 +185,7 @@ let MOCK_DATA = {
       xp: 0,
       lastLoggedAt: null,
       weeklyTarget: 1,
-      minimumUnit: "Five minutes on the pad",
+      minimumUnit: "Play snare rudiments",
       milestones: [],
     },
 
@@ -273,7 +273,7 @@ let MOCK_DATA = {
           id: "m_whitstaballs_first_set_faux_leather",
           text: "Make first set of faux-leather juggling balls",
           cleared: false,
-          unlocksLootIds: ["loot_whitstaballs_launch"],
+          unlocksLootIds: [],
         },
       ],
     },
@@ -328,45 +328,14 @@ let MOCK_DATA = {
   },
 
   commitments: [
-    {
-      id: "commit_seed_1",
-      trajectoryId: "unicycling",
-      notes: "Take unicycle out, free mount, go as far as you want.",
-      status: "PENDING",
-      createdAt: new Date().toISOString(),
-      expiresAt: getTomorrowEndOfDay(),
-      bonusXP: 25,
-    },
-    {
-      id: "commit_seed_2",
-      trajectoryId: "cubing_3x3",
-      notes: "Just do 5 solves, doesn't matter how slow.",
-      status: "PENDING",
-      createdAt: new Date().toISOString(),
-      expiresAt: getTomorrowEndOfDay(),
-      bonusXP: 20,
-    },
-    {
-      id: "commit_seed_3",
-      trajectoryId: "juggling",
-      notes: "Pick up the balls, attempt one clean 5-throw flash.",
-      status: "PENDING",
-      createdAt: new Date().toISOString(),
-      expiresAt: getTomorrowEndOfDay(),
-      bonusXP: 20,
-    },
+  ],
+
+  // Notes: Basically just a "to remember" thing (trajectory optional)
+  notes: [
   ],
 
   // Activity logs: every time you log something, create an entry here
   logs: [
-    {
-      id: "log_abc123",
-      trajectoryId: "cubing_3x3",
-      timestamp: "2026-07-03T18:00:00Z",
-      resistance: "Neutral",
-      note: "Easy solves today, cube felt smooth",
-      pointsAwarded: 11, // calculated: baseXP * multiplier
-    },
   ],
 
   // Vault: persistent notes/reminders per trajectory
@@ -374,12 +343,7 @@ let MOCK_DATA = {
     {
       id: "vault_cubing_1",
       trajectoryId: "cubing_3x3",
-      text: "J Perm blind execution algorithm — check out when you have 20 mins",
-    },
-    {
-      id: "vault_rollerblading_1",
-      trajectoryId: "rollerblading",
-      text: "Left skate: tighten second buckle before next session",
+      text: "Look into blindfolded method",
     },
   ],
 
@@ -474,15 +438,6 @@ let MOCK_DATA = {
       cost: 800,
       status: "AVAILABLE",
       notes: "Pair with Mickey deck",
-    },
-    {
-      id: "loot_whitstaballs_launch",
-      name: "Whitstaballs Launch Celebration",
-      category: "whitstaballs",
-      requiredMilestoneId: "m_whitstaballs_first_set_faux_leather",
-      cost: null,
-      status: "LOCKED",
-      notes: "Something properly special — TBD",
     },
     {
       id: "loot_bavaria_24pack",

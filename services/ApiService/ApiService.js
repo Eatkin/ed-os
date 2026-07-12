@@ -18,17 +18,11 @@ import {
   createCommitment,
   createLogAndApplyXP,
   markCommitmentMissed,
+  createNote,
+  createMilestone,
+  createLootItem,
 } from "./helpers";
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-/**
- * Simulate network lag (800ms roundtrip, like a Lambda)
- */
-function simulateNetworkLag() {
-  return new Promise((resolve) => setTimeout(resolve, 800));
-}
+import { savePersistedState } from "./Persistance";
 
 // ============================================================================
 // API SERVICE
@@ -36,18 +30,15 @@ function simulateNetworkLag() {
 
 export const ApiService = {
   fetchAllData: async () => {
-    await simulateNetworkLag();
     return new Database(DB_STATE);
   },
 
   // --- Getters ---
   getProfile: async () => {
-    await simulateNetworkLag();
     return new Profile(DB_STATE.profile);
   },
 
   getTrajectories: async (filters = {}) => {
-    await simulateNetworkLag();
     const logs = DB_STATE.logs;
     return Object.values(DB_STATE.trajectories).map(
       (t) => new EnrichedTrajectory(t, logs),
@@ -55,13 +46,11 @@ export const ApiService = {
   },
 
   getLootStore: async (category = null) => {
-    await simulateNetworkLag();
     const items = DB_STATE.lootStore.map((l) => new LootItem(l));
     return category ? items.filter((i) => i.category === category) : items;
   },
 
   getLogs: async (trajectoryId = null, limit = 20) => {
-    await simulateNetworkLag();
     let logs = DB_STATE.logs.map((l) => new Log(l));
     if (trajectoryId)
       logs = logs.filter((l) => l.trajectoryId === trajectoryId);
@@ -69,7 +58,6 @@ export const ApiService = {
   },
 
   getVault: async () => {
-    await simulateNetworkLag();
     const vault = DB_STATE.vault;
     return vault;
   },
@@ -81,25 +69,25 @@ export const ApiService = {
     note,
     durationHours = 0,
   ) => {
-    await simulateNetworkLag();
     createLogAndApplyXP({ trajectoryId, resistance, note, durationHours });
+    savePersistedState(DB_STATE);
     return { success: true, logs: await ApiService.getLogs() };
   },
 
   createCommitment: async (trajectoryId, notes, expiresAt, bonusXP = 0) => {
-    await simulateNetworkLag();
     const commitment = createCommitment(
       trajectoryId,
       notes,
       expiresAt,
       bonusXP,
     );
+    savePersistedState(DB_STATE);
     return { success: true, commitment };
   },
 
   missCommitment: async (commitmentId) => {
-    await simulateNetworkLag();
     markCommitmentMissed(commitmentId);
+    savePersistedState(DB_STATE);
     return { success: true };
   },
 
@@ -108,8 +96,8 @@ export const ApiService = {
    * This is where unlocking happens
    */
   clearMilestone: async (trajectoryId, milestoneId) => {
-    await simulateNetworkLag();
     clearMilestoneAndUnlockLoot(trajectoryId, milestoneId);
+    savePersistedState(DB_STATE);
     return {
       success: true,
       trajectories: await ApiService.getTrajectories(),
@@ -127,7 +115,6 @@ export const ApiService = {
     note,
     durationHours = 0,
   ) => {
-    await simulateNetworkLag();
     createLogAndApplyXP({
       trajectoryId,
       resistance,
@@ -136,6 +123,7 @@ export const ApiService = {
       milestoneId,
     });
     clearMilestoneAndUnlockLoot(trajectoryId, milestoneId);
+    savePersistedState(DB_STATE);
     return { success: true };
   },
 
@@ -144,7 +132,6 @@ export const ApiService = {
    * Requires hero points OR milestone unlock
    */
   purchaseLootItem: async (itemId) => {
-    await simulateNetworkLag();
     const item = DB_STATE.lootStore.find((l) => l.id === itemId);
     if (!item) throw new Error(`Loot item ${itemId} not found`);
 
@@ -174,6 +161,7 @@ export const ApiService = {
       item.purchased += 1;
     }
 
+    savePersistedState(DB_STATE);
     return {
       success: true,
       loot: await ApiService.getLootStore(),
@@ -184,8 +172,6 @@ export const ApiService = {
    * POST: Add/update vault entry
    */
   addVaultEntry: async (trajectoryId, text) => {
-    await simulateNetworkLag();
-
     const newEntry = {
       id: `vault_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       trajectoryId,
@@ -194,6 +180,7 @@ export const ApiService = {
 
     DB_STATE.vault.push(newEntry);
 
+    savePersistedState(DB_STATE);
     return {
       success: true,
       vault: await ApiService.getVault(),
@@ -204,10 +191,9 @@ export const ApiService = {
    * DELETE: Remove vault entry
    */
   deleteVaultEntry: async (vaultId) => {
-    await simulateNetworkLag();
-
     DB_STATE.vault = DB_STATE.vault.filter((v) => v.id !== vaultId);
 
+    savePersistedState(DB_STATE);
     return {
       success: true,
       vault: await ApiService.getVault(),
@@ -217,8 +203,35 @@ export const ApiService = {
    * PATCH: Set trajectory status
    */
   setTrajectoryArchived: async (trajectoryId, archived = true) => {
-    await simulateNetworkLag();
     archiveTrajectory(trajectoryId, archived);
+    savePersistedState(DB_STATE);
     return { success: true };
+  },
+
+  /**
+   * POST: Add note
+   */
+  addNote: async (trajectoryId, note) => {
+    const newNote = createNote(trajectoryId, note);
+    savePersistedState(DB_STATE);
+    return { success: true, note: newNote };
+  },
+
+  /**
+   * POST: Add milestone
+   */
+  createMilestone: async (trajectoryId, text) => {
+    const milestone = createMilestone(trajectoryId, text);
+    savePersistedState(DB_STATE);
+    return { success: true, milestone };
+  },
+
+  /**
+   * POST: Add loot
+   */
+  createLootItem: async (lootData) => {
+    const lootItem = createLootItem(lootData);
+    savePersistedState(DB_STATE);
+    return { success: true, lootItem };
   },
 };

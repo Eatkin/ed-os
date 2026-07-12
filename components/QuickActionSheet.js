@@ -1,14 +1,21 @@
 import { Modal, Text, TouchableOpacity } from "react-native";
 import { useAppState } from "../context/AppStateContext";
 import { PlusIcon, TargetIcon, VaultIcon, BulbIcon } from "../assets/vectors";
+import { getAllMilestones } from "../utils/trajectories";
+import { navigate } from "../navigation/navigationRef";
+import MilestoneItem from "./shared/MilestoneItem";
 
 const QuickActionSheet = () => {
   const {
     styles,
+    trajectories,
     quickActionsVisible,
     closeQuickActions,
     openLogModal,
     openCommitmentModal,
+    openNoteModal,
+    openMilestoneAdderModal,
+    openLootAdderModal,
   } = useAppState();
 
   const actions = [
@@ -25,7 +32,7 @@ const QuickActionSheet = () => {
     {
       label: "Create a Milestone",
       icon: (color) => <TargetIcon color={color} size={20} />,
-      onPress: () => console.log("create milestone — not wired yet"),
+      onPress: () => openMilestoneAdderModal(),
     },
     {
       label: "Add Vault Item",
@@ -35,14 +42,25 @@ const QuickActionSheet = () => {
     {
       label: "Add Loot",
       icon: (color) => <VaultIcon color={color} size={20} />,
-      onPress: () => console.log("add loot — not wired yet"),
+      onPress: () => openLootAdderModal(),
     },
     {
       label: "Add a Note",
       icon: (color) => <BulbIcon color={color} size={20} />,
-      onPress: () => console.log("add note — not wired yet"),
+      onPress: () => openNoteModal(),
     },
-    // TODO: View all milestones, view notes
+    {
+      label: "View all Milestones",
+      icon: (color) => <BulbIcon color={color} size={20} />,
+      onPress: () =>
+        navigate("ListScreen", {
+          title: "// ALL MILESTONES",
+          computeData: () => getAllMilestones(trajectories),
+          ItemComponent: MilestoneItem,
+          itemProp: "milestone",
+          emptyLabel: "NO_MILESTONES_YET",
+        }),
+    },
   ];
 
   const handlePress = (action) => {
@@ -74,7 +92,9 @@ const QuickActionSheet = () => {
             paddingHorizontal: 16,
           }}
         >
-          <Text style={[styles.title, { marginBottom: 8 }]}>// QUICK ACTIONS</Text>
+          <Text style={[styles.title, { marginBottom: 8 }]}>
+            // QUICK ACTIONS
+          </Text>
           {actions.map((action) => (
             <TouchableOpacity
               key={action.label}
@@ -88,7 +108,9 @@ const QuickActionSheet = () => {
               }}
             >
               {action.icon("#FFB300")}
-              <Text style={[styles.statValue, { marginLeft: 12 }]}>{action.label}</Text>
+              <Text style={[styles.statValue, { marginLeft: 12 }]}>
+                {action.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </TouchableOpacity>

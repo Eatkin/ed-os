@@ -139,8 +139,19 @@ export class Note {
   constructor({ id, trajectoryId = null, timestamp, note } = {}) {
     this.id = id;
     this.trajectoryId = trajectoryId;
-    this.timestamp = timestamp;
+    this.timestamp = new Date(timestamp);
     this.note = note;
+  }
+
+  get formattedTime() {
+    return this.timestamp.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  get formattedDate() {
+    return formatOrdinalDate(this.timestamp);
   }
 }
 
@@ -249,8 +260,9 @@ export class Database {
     this.vault = data.vault.map((v) => new VaultItem(v));
     this.lootStore = data.lootStore.map((l) => new LootItem(l));
     this.commitments = data.commitments.map((c) => new Commitment(c));
+    this.notes = data.notes.map((n) => new Note(n));
 
-    // The Database constructor now handles the enrichment
+    // Enrich trajectories at source
     this.trajectories = Object.entries(data.trajectories).reduce(
       (acc, [key, val]) => {
         acc[key] = new EnrichedTrajectory(val, this.logs, this.commitments);

@@ -56,3 +56,9 @@ export function getArchiveStats(trajectoryId, logs) {
     endDate: sorted[sorted.length - 1].timestamp,
   };
 }
+
+export function getAllMilestones(trajectories) {
+  return Object.values(trajectories).flatMap((traj) =>
+    traj.milestones.map((m) => ({ ...m, trajectoryId: traj.id, trajectoryName: traj.name })),
+  );
+}
