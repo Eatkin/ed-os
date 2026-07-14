@@ -39,6 +39,30 @@ export function getTrajectoryLogs(trajectoryId, logs, limit = 10) {
     .slice(0, limit);
 }
 
+export function getTrajectoryLogCount(trajectoryId, logs) {
+  return logs
+    .filter((l) => l.trajectoryId === trajectoryId).length;
+}
+
+export function getTrajectoryNotes(trajectoryId, notes, limit = 10) {
+  return notes
+    .filter((n) => n?.trajectoryId === trajectoryId)
+    .sort((a, b) => {
+      const aArchived = a.archived ? 1 : 0;
+      const bArchived = b.archived ? 1 : 0;
+
+      if (aArchived !== bArchived) {
+        return aArchived - bArchived;
+      }
+
+      const dateA = new Date(a.timestamp).getTime() || 0;
+      const dateB = new Date(b.timestamp).getTime() || 0;
+
+      return dateB - dateA;
+    })
+    .slice(0, limit);
+}
+
 export function getArchiveStats(trajectoryId, logs) {
   const trajLogs = logs.filter((l) => l.trajectoryId === trajectoryId);
   if (trajLogs.length === 0) return null;

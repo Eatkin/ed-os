@@ -1,11 +1,20 @@
 import { formatOrdinalDate } from "../../utils/collections";
 import {
   getActiveCommitmentsForTrajectory,
+  getTrajectoryLogCount,
   getTrajectoryLogs,
+  getTrajectoryNotes,
   getWeeklyLogs,
 } from "../../utils/trajectories";
 import { getLevelProgress } from "../../utils/xp";
-import { LEVEL_UP_XP } from "./DB.constants";
+import {
+  ATTRIBUTE_LEVEL_UP_THRESHOLD,
+  ATTRIBUTE_XP_RATE,
+  TRAJECTORY_LEVEL_XP,
+  TRAJECTORY_XP_RATE,
+  XP_DECAY,
+  XP_STEP,
+} from "./DB.constants";
 import { calculateHeat } from "./DB.utils";
 
 export class Attribute {
@@ -16,7 +25,11 @@ export class Attribute {
     this.val = val;
   }
   get progress() {
-    return getLevelProgress(this.val, true); // { level, currentXP, xpToNextLevel, xpProgress }
+    return getLevelProgress(
+      this.val,
+      ATTRIBUTE_LEVEL_UP_THRESHOLD,
+      XP_STEP * ATTRIBUTE_XP_RATE,
+    ); // { level, currentXP, xpToNextLevel, xpProgress }
   }
 }
 
@@ -78,7 +91,6 @@ export class Trajectory {
     description = "",
     friction = "medium",
     attributeWeights = {},
-    level = 0,
     xp = 0,
     lastLoggedAt = null,
     weeklyTarget = 0,
@@ -92,7 +104,6 @@ export class Trajectory {
     this.description = description;
     this.friction = friction;
     this.attributeWeights = attributeWeights; // { cognition: 1.0 }
-    this.level = level;
     this.xp = xp;
     this.lastLoggedAt = lastLoggedAt ? new Date(lastLoggedAt) : null;
     this.weeklyTarget = weeklyTarget;
@@ -109,8 +120,46 @@ export class Trajectory {
     return calculateHeat(this.lastLoggedAt);
   }
 
+  get levelProgress() {
+    return getLevelProgress(
+      this.xp,
+      TRAJECTORY_LEVEL_XP,
+      XP_STEP * TRAJECTORY_XP_RATE,
+    ); // { level, currentXP, xpToNextLevel, xpProgress }
+  }
+
+  get attributeValues() {
+    // Sum, normalise, put on a scale of 1 - 5
+    const weights = this.attributeWeights;
+    const entries = Object.entries(weights);
+
+    const sum = entries.reduce((acc, [_, weight]) => acc + weight, 0);
+
+    return entries.map(([name, weight]) => {
+      const normalised = sum > 0 ? weight / sum : 0;
+      const rating = Math.round(normalised * 4) + 1;
+
+      return {
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        rating: rating,
+      };
+    });
+  }
+
+  get level() {
+    return this.levelProgress.level;
+  }
+
   get xpProgress() {
-    return Math.min((this.xp / LEVEL_UP_XP) * 100, 100);
+    return this.levelProgress.xpProgress;
+  }
+
+  get xpToNextLevel() {
+    return this.levelProgress.xpToNextLevel;
+  }
+
+  get currentLevelXP() {
+    return this.levelProgress.currentXP;
   }
 
   toJSON() {
@@ -123,7 +172,7 @@ export class Trajectory {
 }
 
 export class EnrichedTrajectory extends Trajectory {
-  constructor(trajData, logs = [], commitments = []) {
+  constructor(trajData, logs = [], commitments = [], notes = []) {
     super(trajData);
     this.weeklyLogs = getWeeklyLogs(this.id, logs);
     this.weeklyLogCount = this.weeklyLogs.length;
@@ -132,15 +181,42 @@ export class EnrichedTrajectory extends Trajectory {
       commitments,
     );
     this.recentLogs = getTrajectoryLogs(this.id, logs);
+    this.totalLogs = getTrajectoryLogCount(this.id, logs);
+    this.recentNotes = getTrajectoryNotes(this.id, notes);
+  }
+
+  get todayLogCount() {
+    const today = new Date().toDateString();
+
+    // Count how many logs have a timestamp matching today's date
+    return this.recentLogs.filter((log) => {
+      return new Date(log.timestamp).toDateString() === today;
+    }).length;
+  }
+
+  get currentXPMultiplier() {
+    const count = this.todayLogCount;
+
+    // If first log of the day, multiplier is 1 (no decay)
+    // If second log (count=1), it's 1 * 0.4.
+    // If third log (count=2), it's 0.4 * 0.4, etc.
+    return Math.pow(XP_DECAY, count);
   }
 }
 
 export class Note {
-  constructor({ id, trajectoryId = null, timestamp, note } = {}) {
+  constructor({
+    id,
+    trajectoryId = null,
+    timestamp,
+    note,
+    archived = false,
+  } = {}) {
     this.id = id;
     this.trajectoryId = trajectoryId;
     this.timestamp = new Date(timestamp);
     this.note = note;
+    this.archived = archived;
   }
 
   get formattedTime() {
@@ -265,7 +341,12 @@ export class Database {
     // Enrich trajectories at source
     this.trajectories = Object.entries(data.trajectories).reduce(
       (acc, [key, val]) => {
-        acc[key] = new EnrichedTrajectory(val, this.logs, this.commitments);
+        acc[key] = new EnrichedTrajectory(
+          val,
+          this.logs,
+          this.commitments,
+          this.notes,
+        );
         return acc;
       },
       {},

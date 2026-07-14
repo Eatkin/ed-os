@@ -10,6 +10,7 @@ import { useNoteState } from "./appStateContextHelpers/NoteModal";
 import { useMilestoneAdderState } from "./appStateContextHelpers/MilestoneAdderModal";
 import { useLootAdderState } from "./appStateContextHelpers/LootAdderModal";
 import { initializeDB } from "../services/ApiService/DB.state";
+import { useTrajectoryState } from "./appStateContextHelpers/CreateTrajectoryModal";
 
 const AppStateContext = createContext();
 
@@ -31,6 +32,7 @@ export const AppStateProvider = ({ children }) => {
   const noteModalSlice = useNoteState();
   const milestoneAdderModalSlice = useMilestoneAdderState();
   const lootAdderModalSlice = useLootAdderState();
+  const trajectoryModalSlice = useTrajectoryState();
   const styles = baseStyles;
 
   // Single place that re-pulls everything from the mock backend.
@@ -141,6 +143,7 @@ export const AppStateProvider = ({ children }) => {
         ...noteModalSlice,
         ...milestoneAdderModalSlice,
         ...lootAdderModalSlice,
+        ...trajectoryModalSlice,
       }}
     >
       {children}

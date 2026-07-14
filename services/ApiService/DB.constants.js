@@ -1,15 +1,11 @@
 export const WEEKLY_TARGET_BONUS_XP = 50; // flat bonus for hitting weekly target
-export const ATTRIBUTE_XP_RATE = 0.1; // How many XP points go to attributes
+export const ATTRIBUTE_XP_RATE = 0.1; // What factor to reduce level step by for attributes
 export const ATTRIBUTE_LEVEL_UP_THRESHOLD = 100; // How many XP points required to level up an attribute
 export const BASE_LEVEL_XP = 500; // XP needed for level 1
+export const TRAJECTORY_LEVEL_XP = 100; // XP needed for a trajectory to level up
+export const TRAJECTORY_XP_RATE = 0.2; // What factor to reduce level step by for trajectories
 export const XP_STEP = 100; // extra XP required per level thereafter
-
-const getTomorrowEndOfDay = () => {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  d.setHours(23, 59, 59, 999);
-  return d.toISOString();
-};
+export const XP_DECAY = 0.4; // How much xp decays by for repeated logs of a trajectory
 
 export const RESISTANCE_MULTIPLIERS = {
   Flow: 1.0,
@@ -67,7 +63,7 @@ export const MOCK_DATA = {
       attributeWeights: { cognition: 1.0 },
       level: 1,
       xp: 0,
-      lastLoggedAt: "2026-07-03T18:00:00Z",
+      lastLoggedAt:null,
       weeklyTarget: 3,
       minimumUnit: "One untimed slow solve",
       milestones: [

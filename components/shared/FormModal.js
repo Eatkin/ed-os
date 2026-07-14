@@ -1,14 +1,26 @@
 import { useState, useEffect } from "react";
-import { Modal, Text, TouchableOpacity, View, ScrollView } from "react-native";
+import {
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  StyleSheet,
+} from "react-native";
 import { useAppState } from "../../context/AppStateContext";
 import SelectButtons from "./form/SelectButtons";
 import TextEntryField from "./form/TextEntryField";
 import TrajectoryPickerField from "./form/TrajectoryPickerField";
+import AttributeWeightField from "./form/AttributeWeightField";
 
 const FIELD_COMPONENTS = {
   select: SelectButtons,
   text: TextEntryField,
   trajectoryPicker: TrajectoryPickerField,
+  attributeWeights: AttributeWeightField,
 };
 
 // fields: [{ key, type, label, required, ...props for that field type }]
@@ -62,72 +74,91 @@ const FormModal = ({
       transparent
       onRequestClose={handleClose}
     >
-      <TouchableOpacity
-        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }}
-        activeOpacity={1}
-        onPress={handleClose}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {}}
+        <View
           style={{
-            marginTop: "auto",
-            backgroundColor: "#111",
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            padding: 20,
-            maxHeight: "85%",
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            justifyContent: "flex-end",
           }}
         >
-          <Text style={styles.title}>{title}</Text>
-          {headerExtra}
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => {
+              Keyboard.dismiss();
+              handleClose();
+            }}
+          />
 
-          <ScrollView>
-            {fields.map((field) => {
-              const FieldComponent = FIELD_COMPONENTS[field.type];
-              if (!FieldComponent) return null;
+          <View
+            style={{
+              backgroundColor: "#111",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: 20,
+              paddingBottom: Platform.OS === "ios" ? 40 : 20,
+              maxHeight: "85%",
+            }}
+          >
+            <Text style={styles.title}>{title}</Text>
+            {headerExtra}
 
-              const { key, ...fieldProps } = field;
-              const helper = field.helperText?.(values);
-
-              return (
-                <View key={key}>
-                  <FieldComponent
-                    {...fieldProps}
-                    value={values[key]}
-                    onChange={(val) => setFieldValue(key, val)}
-                  />
-                  {helper && (
-                    <Text
-                      style={[
-                        styles.statLabel,
-                        { color: "#555", marginTop: 4 },
-                      ]}
-                    >
-                      {helper}
-                    </Text>
-                  )}
-                </View>
-              );
-            })}
-            <TouchableOpacity
-              style={[
-                styles.card,
-                {
-                  marginTop: 20,
-                  opacity: !missingRequired && !submitting ? 1 : 0.4,
-                },
-              ]}
-              onPress={handleSubmit}
-              disabled={missingRequired || submitting}
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ flexGrow: 1 }}
+              showsVerticalScrollIndicator={true}
             >
-              <Text style={[styles.statValue, { textAlign: "center" }]}>
-                {submitting ? "SAVING..." : "SUBMIT"}
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </TouchableOpacity>
-      </TouchableOpacity>
+              {fields.map((field) => {
+                const FieldComponent = FIELD_COMPONENTS[field.type];
+                if (!FieldComponent) return null;
+
+                const { key, ...fieldProps } = field;
+                const helper = field.helperText?.(values);
+
+                return (
+                  <View key={key}>
+                    <FieldComponent
+                      {...fieldProps}
+                      value={values[key]}
+                      onChange={(val) => setFieldValue(key, val)}
+                    />
+                    {helper && (
+                      <Text
+                        style={[
+                          styles.statLabel,
+                          { color: "#555", marginTop: 4 },
+                        ]}
+                      >
+                        {helper}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })}
+
+              <TouchableOpacity
+                style={[
+                  styles.card,
+                  {
+                    marginTop: 20,
+                    opacity: !missingRequired && !submitting ? 1 : 0.4,
+                  },
+                ]}
+                onPress={handleSubmit}
+                disabled={missingRequired || submitting}
+              >
+                <Text style={[styles.statValue, { textAlign: "center" }]}>
+                  {submitting ? "SAVING..." : "SUBMIT"}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

@@ -7,10 +7,12 @@ import { ApiService } from "../../services/ApiService/ApiService";
 const STATUS_ICON = { PENDING: "⏳", FULFILLED: "💎", MISSED: "🐖" };
 
 const CommitmentItem = ({ commitment }) => {
-  const { styles, openLogModal, refreshAll, openConfirmModal } = useAppState();
+  const { styles, openLogModal, refreshAll, openConfirmModal, trajectories } =
+    useAppState();
   const [expanded, setExpanded] = useState(false);
 
   const isPending = commitment.status === "PENDING";
+  const traj = trajectories[commitment.trajectoryId];
 
   const handleMarkMissed = async () => {
     // Yeets the commitment
@@ -43,6 +45,7 @@ const CommitmentItem = ({ commitment }) => {
         {STATUS_ICON[commitment.status]} Complete by{" "}
         {formatOrdinalDate(commitment.expiresAt)}
       </Text>
+      <Text style={styles.statValue}>Trajectory: {traj && traj.name}</Text>
       <Text style={styles.statLabel}>Requirement: {commitment.notes}</Text>
       <Text style={styles.statLabel}>
         Committed on {formatOrdinalDate(commitment.createdAt)}

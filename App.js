@@ -8,6 +8,7 @@ import CommitmentModal from "./components/modals/MakeCommitmentModal";
 import NoteModal from "./components/modals/CreateNoteModal";
 import LootAdderModal from "./components/modals/LootAdderModal";
 import MilestoneAdderModal from "./components/modals/MilestoneAdderModal";
+import CreateTrajectoryModal from "./components/modals/CreateTrajectoryModal";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <NoteModal />
       <LootAdderModal />
       <MilestoneAdderModal />
+      <CreateTrajectoryModal />
     </AppStateProvider>
   );
 }

@@ -16,6 +16,7 @@ const QuickActionSheet = () => {
     openNoteModal,
     openMilestoneAdderModal,
     openLootAdderModal,
+    openCreateTrajectoryModal,
   } = useAppState();
 
   const actions = [
@@ -28,6 +29,11 @@ const QuickActionSheet = () => {
       label: "Make a Commitment",
       icon: (color) => <TargetIcon color={color} size={20} />,
       onPress: () => openCommitmentModal(),
+    },
+    {
+      label: "Create a Trajectory",
+      icon: (color) => <TargetIcon color={color} size={20} />,
+      onPress: () => openCreateTrajectoryModal(),
     },
     {
       label: "Create a Milestone",

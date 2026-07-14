@@ -7,7 +7,10 @@ const PREVIEW_COUNT = 5;
 
 const HomeScreenNotes = () => {
   const { notes, styles } = useAppState();
-  const previewLogs = notes.slice(0, PREVIEW_COUNT);
+  const previewNotes = [...notes]
+    .filter((n) => !(n?.archived ?? false))
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, PREVIEW_COUNT);
 
   return (
     <View style={styles.card}>
@@ -21,6 +24,12 @@ const HomeScreenNotes = () => {
         <Text style={styles.monospaceText}>// RECENT_NOTES</Text>
         <ViewAllLink
           title="// ALL NOTES"
+          computeData={(appState) => {
+            const allNotes = appState.notes ?? [];
+            return [...allNotes].sort((a, b) =>
+              a.archived === b.archived ? 0 : a.archived ? 1 : -1,
+            );
+          }}
           dataKey="notes"
           ItemComponent={NoteItem}
           itemProp="note"
@@ -28,8 +37,8 @@ const HomeScreenNotes = () => {
         />
       </View>
 
-      {previewLogs.length > 0 ? (
-        previewLogs.map((entry) => <NoteItem key={entry.id} note={entry} />)
+      {previewNotes.length > 0 ? (
+        previewNotes.map((entry) => <NoteItem key={entry.id} note={entry} />)
       ) : (
         <Text style={styles.monospaceText}>&gt; NO_NOTES_YET</Text>
       )}

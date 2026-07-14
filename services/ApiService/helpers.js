@@ -184,6 +184,39 @@ export function markCommitmentMissed(commitmentId) {
   return commitment;
 }
 
+export function createTrajectory({
+  name,
+  description = "",
+  friction = "medium",
+  weeklyTarget = 0,
+  minimumUnit = "",
+  attributeWeights = {},
+}) {
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+
+  if (DB_STATE.trajectories[id]) {
+    throw new Error(`A trajectory with id "${id}" already exists`);
+  }
+
+  DB_STATE.trajectories[id] = {
+    id,
+    name,
+    description,
+    friction,
+    attributeWeights,
+    level: 0,
+    xp: 0,
+    lastLoggedAt: null,
+    weeklyTarget,
+    minimumUnit,
+    archived: false,
+    archivedAt: null,
+    milestones: [],
+  };
+
+  return DB_STATE.trajectories[id];
+}
+
 export function archiveTrajectory(trajectoryId, archived = true) {
   const traj = DB_STATE.trajectories[trajectoryId];
   if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
@@ -201,6 +234,13 @@ export function createNote(trajectoryId, note) {
   };
   DB_STATE.notes.unshift(newNote);
   return newNote;
+}
+
+export function archiveNote(noteId, archived = true) {
+  const note = DB_STATE.notes.find((n) => n.id === noteId);
+  if (!note) throw new Error(`Note ${noteId} not found`);
+  note.archived = archived;
+  return note;
 }
 
 export function createMilestone(trajectoryId, text) {
@@ -245,3 +285,4 @@ export function createLootItem({ name, category, cost, requiredMilestoneId, note
 
   return lootItem;
 }
+

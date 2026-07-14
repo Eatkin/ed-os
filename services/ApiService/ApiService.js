@@ -21,6 +21,8 @@ import {
   createNote,
   createMilestone,
   createLootItem,
+  archiveNote,
+  createTrajectory,
 } from "./helpers";
 import { savePersistedState } from "./Persistance";
 
@@ -40,8 +42,9 @@ export const ApiService = {
 
   getTrajectories: async (filters = {}) => {
     const logs = DB_STATE.logs;
+    const notes = DB_STATE.notes;
     return Object.values(DB_STATE.trajectories).map(
-      (t) => new EnrichedTrajectory(t, logs),
+      (t) => new EnrichedTrajectory(t, logs, notes),
     );
   },
 
@@ -200,6 +203,14 @@ export const ApiService = {
     };
   },
   /**
+   * POST: Add trajectory
+   */
+  createTrajectory: async (trajectoryData) => {
+    const trajectory = createTrajectory(trajectoryData);
+    savePersistedState(DB_STATE);
+    return { success: true, trajectory };
+  },
+  /**
    * PATCH: Set trajectory status
    */
   setTrajectoryArchived: async (trajectoryId, archived = true) => {
@@ -215,6 +226,15 @@ export const ApiService = {
     const newNote = createNote(trajectoryId, note);
     savePersistedState(DB_STATE);
     return { success: true, note: newNote };
+  },
+
+  /**
+   * PATCH: Set note archived
+   */
+  setNoteArchived: async (noteId, archived = true) => {
+    archiveNote(noteId, archived);
+    savePersistedState(DB_STATE);
+    return { success: true };
   },
 
   /**

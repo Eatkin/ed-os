@@ -78,19 +78,47 @@ const baseStyles = StyleSheet.create({
     backgroundColor: "#FFB300",
     borderRadius: 3,
   },
-backButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingVertical: 12,
-  paddingHorizontal: 4,
-  marginBottom: 8,
-},
-backButtonText: {
-  color: "#FFB300",
-  fontSize: 16,
-  fontFamily: "monospace",
-  fontWeight: "bold",
-},
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    marginBottom: 8,
+  },
+  backButtonText: {
+    color: "#FFB300",
+    fontSize: 16,
+    fontFamily: "monospace",
+    fontWeight: "bold",
+  },
+
+  // Display for trajectory attributes
+  attributeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 4,
+  },
+  attributeName: {
+    color: "#AAAAAA",
+    fontFamily: "monospace",
+    fontSize: 12,
+    width: 80, // Fixed width to keep pips aligned
+  },
+  pipContainer: {
+    flexDirection: "row",
+  },
+  pip: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  pipFilled: {
+    backgroundColor: "#FFB300",
+  },
+  pipEmpty: {
+    backgroundColor: "#333333",
+  },
 });
 
 export default baseStyles;

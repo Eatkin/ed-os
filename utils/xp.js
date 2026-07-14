@@ -1,32 +1,28 @@
 import {
-  ATTRIBUTE_LEVEL_UP_THRESHOLD,
-  ATTRIBUTE_XP_RATE,
   BASE_LEVEL_XP,
   XP_STEP,
 } from "../services/ApiService/DB.constants";
 
-export function xpForLevel(level, attribute = false) {
-  const levelXp = attribute ? ATTRIBUTE_LEVEL_UP_THRESHOLD : BASE_LEVEL_XP;
-  const xpStep = attribute ? XP_STEP * ATTRIBUTE_XP_RATE : XP_STEP;
-  return levelXp + (level - 1) * xpStep;
+export function xpForLevel(level, baseLevelXP = BASE_LEVEL_XP, xpStep = XP_STEP) {
+  return baseLevelXP + (level - 1) * xpStep;
 }
 
-export function totalXPForLevel(level, attribute = false) {
+export function totalXPForLevel(level, baseLevelXP = BASE_LEVEL_XP, xpStep = XP_STEP) {
   let total = 0;
-  for (let i = 1; i < level; i++) total += xpForLevel(i, attribute);
+  for (let i = 1; i < level; i++) total += xpForLevel(i, baseLevelXP, xpStep);
   return total;
 }
 
-export function getLevelProgress(totalXP, attribute = false) {
+export function getLevelProgress(totalXP, baseLevelXP = BASE_LEVEL_XP, xpStep = XP_STEP) {
   let level = 1;
   let remaining = totalXP;
 
-  while (remaining >= xpForLevel(level, attribute) && remaining > 0) {
-    remaining -= xpForLevel(level, attribute);
+  while (remaining >= xpForLevel(level, baseLevelXP, xpStep) && remaining > 0) {
+    remaining -= xpForLevel(level, baseLevelXP, xpStep);
     level++;
   }
 
-  const currentLevelXP = xpForLevel(level, attribute);
+  const currentLevelXP = xpForLevel(level, baseLevelXP, xpStep);
   return {
     level,
     currentXP: remaining,

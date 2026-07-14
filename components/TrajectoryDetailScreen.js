@@ -5,6 +5,8 @@ import LogItem from "./shared/LogItem";
 import CommitmentItem from "./shared/CommitmentItem";
 import { ApiService } from "../services/ApiService/ApiService";
 import BackButton from "./shared/BackButton";
+import { getHeatColour } from "../utils/trajectories";
+import NoteItem from "./shared/NoteItem";
 
 const TrajectoryDetailScreen = ({ route, navigation }) => {
   const { trajectoryId } = route.params;
@@ -17,6 +19,7 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
     openMilestoneModal,
     openConfirmModal,
     openCommitmentModal,
+    openNoteModal
   } = useAppState();
   const traj = trajectories[trajectoryId];
 
@@ -41,12 +44,38 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <BackButton navigation={navigation} />
 
-      <Text style={styles.title}>// {traj.name.toUpperCase()}</Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text style={styles.title}>// {traj.name.toUpperCase()}</Text>
+        {/* Subtle temperature indicator badge */}
+        <Text
+          style={[styles.statLabel, { color: getHeatColour(traj.temperature) }]}
+        >
+          [ {traj.temperature?.toUpperCase() ?? "COLD"} ]
+        </Text>
+      </View>
       <Text style={styles.subtitle}>{traj.description}</Text>
 
       <View style={styles.card}>
-        <Text style={styles.statLabel}>LEVEL {traj.level}</Text>
-        <View style={styles.progressBarBg}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text style={styles.statLabel}>LEVEL {traj.level}</Text>
+          {/* Displaying raw numbers next to the level */}
+          <Text style={[styles.statLabel, { color: "#888" }]}>
+            {traj.currentLevelXP} / {traj.xpToNextLevel} XP
+          </Text>
+        </View>
+
+        <View style={[styles.progressBarBg, { marginVertical: 6 }]}>
           <View
             style={[
               styles.progressBarFill,
@@ -54,8 +83,40 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
             ]}
           />
         </View>
+
+        {/* Displaying percentage text under the bar */}
+        <Text
+          style={[
+            styles.statLabel,
+            { marginBottom: 6, fontSize: 11, color: "#666" },
+          ]}
+        >
+          {traj.xpProgress ?? 0}% to Level {traj.level + 1}
+        </Text>
+
+        {/* Attributes display */}
+        {traj.attributeValues.map((attr) => (
+          <View key={attr.name} style={styles.attributeRow}>
+            <Text style={styles.attributeName}>{attr.name.toUpperCase()}</Text>
+            <View style={styles.pipContainer}>
+              {[1, 2, 3, 4, 5].map((level) => (
+                <View
+                  key={level}
+                  style={[
+                    styles.pip,
+                    level <= attr.rating ? styles.pipFilled : styles.pipEmpty,
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+        ))}
+
         <Text style={styles.statLabel}>
           {traj.weeklyLogCount}/{traj.weeklyTarget} this week
+        </Text>
+        <Text style={styles.statLabel}>
+          Logged {traj.totalLogs} time{traj.totalLogs === 1 ? "" : "s"}!
         </Text>
       </View>
 
@@ -77,6 +138,15 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
             + COMMITMENT
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.card, { flex: 1, marginLeft: 6 }]}
+          onPress={() => openNoteModal(trajectoryId)}
+        >
+          <Text style={[styles.statValue, { textAlign: "center" }]}>
+            + NOTE
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={{ marginTop: 10 }}>
@@ -89,19 +159,23 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        <Text style={styles.subtitle}>MILESTONES</Text>
-        {traj.milestones.map((m) => (
-          <TouchableOpacity
-            key={m.id}
-            style={styles.card}
-            disabled={m.cleared}
-            onPress={() => openMilestoneModal(traj.id, m.id)}
-          >
-            <Text style={styles.statValue}>
-              {m.cleared ? "✅" : "⬜️"} {m.text}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {traj.milestones.length > 0 && (
+          <>
+            <Text style={styles.subtitle}>MILESTONES</Text>
+            {traj.milestones.map((m) => (
+              <TouchableOpacity
+                key={m.id}
+                style={styles.card}
+                disabled={m.cleared}
+                onPress={() => openMilestoneModal(traj.id, m.id)}
+              >
+                <Text style={styles.statValue}>
+                  {m.cleared ? "✅" : "⬜️"} {m.text}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </>
+        )}
         {trajVaultEntries.length > 0 && (
           <>
             <Text style={styles.subtitle}>VAULT</Text>
@@ -121,13 +195,31 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
             ))}
           </>
         )}
+
+        {traj.recentNotes.length > 0 && (
+          <>
+            <Text style={styles.subtitle}>RECENT NOTES</Text>
+            {traj.recentNotes.map((n) => (
+              <NoteItem key={n.id} note={n} />
+            ))}
+          </>
+        )}
       </ScrollView>
 
       <TouchableOpacity
         onPress={handleArchive}
-        style={{ marginTop: 24, marginBottom: 12, alignItems: "center" }}
+        style={{
+          marginTop: 24,
+          marginBottom: 12,
+          alignItems: "center",
+          paddingVertical: 6,
+          paddingHorizontal: 12,
+          borderWidth: 1,
+          borderColor: "#FFB300",
+          borderRadius: 8,
+        }}
       >
-        <Text style={[styles.statLabel, { color: "#555" }]}>
+        <Text style={[styles.statLabel, { color: "#AAA" }]}>
           ARCHIVE THIS TRAJECTORY
         </Text>
       </TouchableOpacity>
