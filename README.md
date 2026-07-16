@@ -42,10 +42,6 @@ Notes are notes. You write notes. They are a todo list analogue. Randomly think 
 
 
 
-React Native app for goals, keeping track of what to do, rewards, etc.
-
-Very WIP.
-
 Run with:
 
 ```bash
