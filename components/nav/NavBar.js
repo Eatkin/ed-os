@@ -1,13 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { TouchableOpacity, View } from "react-native";
-import {
-  PlusIcon,
-  SwordIcon,
-  TargetIcon,
-  VaultIcon,
-  BulbIcon,
-} from "../../assets/vectors";
 import PromptsScreen from "../screens/PromptsScreen";
 import { useAppState } from "../../context/AppStateContext";
 import NullScreen from "../screens/NullScreen";
@@ -15,6 +8,7 @@ import { GoalsStack } from "../goalsScreen/GoalsStack";
 import { HomeStack } from "../homeScreen/HomeStack";
 import WantsScreen from "../wantsScreen/WantsScreen";
 import { navigationRef } from "../../navigation/navigationRef";
+import { Gem, Library, Plus, Sparkle, Sword } from "lucide-react-native";
 
 const Tab = createBottomTabNavigator();
 
@@ -45,7 +39,7 @@ const CustomCenterButton = ({ onPress }) => (
         alignItems: "center",
       }}
     >
-      <PlusIcon color="#FFB300" size={28} />
+      <Plus color="#FFB300" size={28} />
     </View>
   </TouchableOpacity>
 );
@@ -68,9 +62,7 @@ export function NavigationShell() {
           name="Home"
           component={HomeStack}
           options={{
-            tabBarIcon: ({ color, size }) => (
-              <SwordIcon color={color} size={size} />
-            ),
+            tabBarIcon: ({ color, size }) => <Sword color={color} size={size} />,
           }}
         />
         <Tab.Screen
@@ -78,7 +70,7 @@ export function NavigationShell() {
           component={GoalsStack}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <TargetIcon color={color} size={size} />
+              <Sparkle color={color} size={size} />
             ),
           }}
         />
@@ -100,7 +92,7 @@ export function NavigationShell() {
           component={WantsScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <VaultIcon color={color} size={size} />
+              <Gem color={color} size={size} />
             ),
           }}
         />
@@ -109,7 +101,7 @@ export function NavigationShell() {
           component={PromptsScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <BulbIcon color={color} size={size} />
+              <Library color={color} size={size} />
             ),
           }}
         />

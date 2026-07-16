@@ -193,15 +193,6 @@ export class EnrichedTrajectory extends Trajectory {
       return new Date(log.timestamp).toDateString() === today;
     }).length;
   }
-
-  get currentXPMultiplier() {
-    const count = this.todayLogCount;
-
-    // If first log of the day, multiplier is 1 (no decay)
-    // If second log (count=1), it's 1 * 0.4.
-    // If third log (count=2), it's 0.4 * 0.4, etc.
-    return Math.pow(XP_DECAY, count);
-  }
 }
 
 export class Note {

@@ -1,9 +1,9 @@
 import { Modal, Text, TouchableOpacity } from "react-native";
 import { useAppState } from "../context/AppStateContext";
-import { PlusIcon, TargetIcon, VaultIcon, BulbIcon } from "../assets/vectors";
 import { getAllMilestones } from "../utils/trajectories";
 import { navigate } from "../navigation/navigationRef";
 import MilestoneItem from "./shared/MilestoneItem";
+import { Coins, Crosshair, GalleryHorizontalEnd, LandPlot, NotebookPen, Route, ScrollText, Vault } from "lucide-react-native";
 
 const QuickActionSheet = () => {
   const {
@@ -22,42 +22,42 @@ const QuickActionSheet = () => {
   const actions = [
     {
       label: "Log Something",
-      icon: (color) => <PlusIcon color={color} size={20} />,
+      icon: (colour) => <ScrollText color={colour} size={20} />,
       onPress: () => openLogModal(),
     },
     {
       label: "Make a Commitment",
-      icon: (color) => <TargetIcon color={color} size={20} />,
+      icon: (colour) => <Crosshair color={colour} size={20}/>,
       onPress: () => openCommitmentModal(),
     },
     {
       label: "Create a Trajectory",
-      icon: (color) => <TargetIcon color={color} size={20} />,
+      icon: (colour) => <Route color={colour} size={20}/>,
       onPress: () => openCreateTrajectoryModal(),
     },
     {
       label: "Create a Milestone",
-      icon: (color) => <TargetIcon color={color} size={20} />,
+      icon: (colour) => <LandPlot color={colour} size={20} />,
       onPress: () => openMilestoneAdderModal(),
     },
     {
       label: "Add Vault Item",
-      icon: (color) => <VaultIcon color={color} size={20} />,
+      icon: (colour) => <Vault color={colour} size={20} />,
       onPress: () => console.log("add vault item — not wired yet"),
     },
     {
       label: "Add Loot",
-      icon: (color) => <VaultIcon color={color} size={20} />,
+      icon: (colour) => <Coins color={colour} size={20} />,
       onPress: () => openLootAdderModal(),
     },
     {
       label: "Add a Note",
-      icon: (color) => <BulbIcon color={color} size={20} />,
+      icon: (colour) => <NotebookPen color={colour} size={20} />,
       onPress: () => openNoteModal(),
     },
     {
       label: "View all Milestones",
-      icon: (color) => <BulbIcon color={color} size={20} />,
+      icon: (colour) => <GalleryHorizontalEnd color={colour} size={20} />,
       onPress: () =>
         navigate("ListScreen", {
           title: "// ALL MILESTONES",

@@ -10,8 +10,10 @@ const STATUS_BADGE = {
 };
 
 const LootItem = ({ item }) => {
-  const { styles, profile, trajectories, refreshAll } = useAppState();
+  const { styles, profile, trajectories, refreshAll, openConfirmModal } =
+    useAppState();
   const [purchasing, setPurchasing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const badge = STATUS_BADGE[item.status];
 
   const canAfford =
@@ -30,19 +32,35 @@ const LootItem = ({ item }) => {
 
   const handlePurchase = async () => {
     setPurchasing(true);
-    try {
-      await ApiService.purchaseLootItem(item.id);
-      await refreshAll();
-    } catch (e) {
-      console.error("Purchase failed:", e);
-    } finally {
-      setPurchasing(false);
-    }
+    openConfirmModal({
+      title: `Purchase ${item.name}?`,
+      message: `This will cost ${item.cost} Hero Points`,
+      confirmLabel: "Yes!",
+      onConfirm: async () => {
+        try {
+          await ApiService.purchaseLootItem(item.id);
+          await refreshAll();
+        } catch (e) {
+          console.error("Purchase failed:", e);
+        } finally {
+          setPurchasing(false);
+        }
+      },
+    });
   };
 
   return (
-    <View
-      style={[styles.card, { opacity: item.status === "LOCKED" ? 0.8 : 1 }]}
+    <TouchableOpacity
+      onPress={() => setExpanded((e) => !e)}
+      style={[
+        styles.card,
+        {
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: "#222",
+          opacity: item.status === "LOCKED" ? 0.8 : 1,
+        },
+      ]}
     >
       <View
         style={{
@@ -71,27 +89,31 @@ const LootItem = ({ item }) => {
         </Text>
       )}
 
-      {item.status === "AVAILABLE" && (
+      {expanded && (
         <>
-          <Text style={[styles.statLabel, { marginTop: 4 }]}>
-            {item.cost != null ? `${item.cost} HP` : "Free unlock"}
-          </Text>
-          <TouchableOpacity
-            style={{ opacity: canAfford && !purchasing ? 1 : 0.4 }}
-            onPress={handlePurchase}
-            disabled={!canAfford || purchasing}
-          >
-            <Text style={styles.statValue}>
-              {purchasing
-                ? "..."
-                : canAfford
-                  ? "PURCHASE"
-                  : `NOT ENOUGH HP (${requiredHP} to go)`}
-            </Text>
-          </TouchableOpacity>
+          {item.status === "AVAILABLE" && (
+            <>
+              <Text style={[styles.statLabel, { marginTop: 4 }]}>
+                {item.cost != null ? `${item.cost} HP` : "Free unlock"}
+              </Text>
+              <TouchableOpacity
+                style={{ opacity: canAfford && !purchasing ? 1 : 0.4 }}
+                onPress={handlePurchase}
+                disabled={!canAfford || purchasing}
+              >
+                <Text style={styles.statValue}>
+                  {purchasing
+                    ? "..."
+                    : canAfford
+                      ? "PURCHASE"
+                      : `NOT ENOUGH HP (${requiredHP} to go)`}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </>
       )}
-    </View>
+    </TouchableOpacity>
   );
 };
 

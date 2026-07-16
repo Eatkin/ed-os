@@ -161,6 +161,10 @@ export const ApiService = {
     if (!item.recurring) {
       item.status = "OWNED";
     } else {
+      // Account for items that have never had purchased set
+      if (item.purchased === undefined) {
+        item.purchased = 0;
+      }
       item.purchased += 1;
     }
 

@@ -6,7 +6,22 @@ import {
   DB_STATE,
   WEEKLY_TARGET_BONUS_XP,
   ATTRIBUTE_XP_RATE,
+  XP_DECAY,
 } from "./DB.constants";
+
+function getTrajectoryXPReductionFactor(trajectoryId) {
+  // Calculate the count of logs already created today for this trajectory
+  const today = new Date().toISOString().split('T')[0];
+  const todayLogCount = DB_STATE.logs.filter(log => 
+    log.trajectoryId === trajectoryId && 
+    log.timestamp.startsWith(today)
+  ).length;
+
+  // Apply your decay logic directly
+  const reduction = Math.pow(XP_DECAY, todayLogCount);
+  return reduction;
+};
+
 
 // Creates a log entry, applies XP to profile + trajectory, and handles
 // any resulting level-ups (including attribute distribution).
@@ -29,9 +44,13 @@ export function createLogAndApplyXP({
     );
   }
 
+  // Reduction factor for logging multiple times a day
+  const reduction = getTrajectoryXPReductionFactor(trajectoryId);
   const baseXP = FRICTION_BASE_XP[traj.friction] || 10;
-  const multiplier = RESISTANCE_MULTIPLIERS[resistance];
-  const pointsAwarded = Math.floor(baseXP * multiplier);
+  const multiplier = RESISTANCE_MULTIPLIERS[resistance] * reduction;
+  // Always at least 1 xp
+  const pointsAwarded = Math.max(Math.floor(baseXP * multiplier), 1);
+
 
   const newLog = {
     id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
@@ -82,7 +101,7 @@ export function createLogAndApplyXP({
   if (totalWeight > 0) {
     Object.entries(traj.attributeWeights).forEach(([attrId, weight]) => {
       const gain = Math.floor(
-        totalGain * (weight / totalWeight) * ATTRIBUTE_XP_RATE,
+        totalGain * (weight / totalWeight) * ATTRIBUTE_XP_RATE * reduction,
       );
       if (gain > 0) {
         const existing = DB_STATE.profile.attributes.find(
