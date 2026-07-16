@@ -29,7 +29,7 @@ const CommitmentItem = ({ commitment }) => {
 
   const handleLogItNow = () => {
     setExpanded(false);
-    openLogModal(commitment.trajectoryId); // saving a log here auto-fulfills via tryFulfillCommitment
+    openLogModal(commitment.trajectoryId, commitment.id); // saving a log here auto-fulfills via tryFulfillCommitment
   };
 
   return (

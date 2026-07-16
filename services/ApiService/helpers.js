@@ -32,6 +32,7 @@ export function createLogAndApplyXP({
   note,
   durationHours = 0,
   milestoneId = null,
+  commitmentId = null,
 }) {
   const traj = DB_STATE.trajectories[trajectoryId];
   if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
@@ -79,7 +80,7 @@ export function createLogAndApplyXP({
   newLog.bonusXP = weeklyBonus;
 
   // commitment bonus (adds onto newLog.bonusXP)
-  const fulfilledCommitment = tryFulfillCommitment(trajectoryId);
+  const fulfilledCommitment = tryFulfillCommitment(commitmentId);
   const commitmentBonus = fulfilledCommitment?.bonusXP ?? 0;
   newLog.commitmentId = fulfilledCommitment?.id ?? null;
   newLog.bonusXP += commitmentBonus;
@@ -185,10 +186,10 @@ export function sweepExpiredCommitments() {
 
 // Called from inside createLogAndApplyXP after a log is saved —
 // checks for a live pending commitment on this trajectory and fulfills it.
-export function tryFulfillCommitment(trajectoryId) {
+export function tryFulfillCommitment(commitmentId) {
   sweepExpiredCommitments();
   const commitment = DB_STATE.commitments.find(
-    (c) => c.trajectoryId === trajectoryId && c.status === "PENDING",
+    (c) => c.id === commitmentId && c.status === "PENDING",
   );
   if (!commitment) return null;
 

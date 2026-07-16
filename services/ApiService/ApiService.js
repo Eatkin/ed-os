@@ -70,9 +70,10 @@ export const ApiService = {
     trajectoryId,
     resistance,
     note,
+    commitmentId,
     durationHours = 0,
   ) => {
-    createLogAndApplyXP({ trajectoryId, resistance, note, durationHours });
+    createLogAndApplyXP({ trajectoryId, resistance, note, durationHours, commitmentId });
     savePersistedState(DB_STATE);
     return { success: true, logs: await ApiService.getLogs() };
   },

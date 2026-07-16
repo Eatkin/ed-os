@@ -6,7 +6,7 @@ import FormModal from "../shared/FormModal";
 const RESISTANCE_OPTIONS = Object.keys(RESISTANCE_MULTIPLIERS);
 
 const LogActivityModal = () => {
-  const { logModalVisible, closeLogModal, logModalTrajectoryId, refreshAll } =
+  const { logModalVisible, closeLogModal, logModalTrajectoryId, logModalCommitmentId, refreshAll } =
     useAppState();
 
   const fields = [
@@ -38,10 +38,12 @@ const LogActivityModal = () => {
 
   const handleSubmit = async (payload) => {
     const trajectoryId = logModalTrajectoryId || payload.trajectoryId;
+    const commitmentId = logModalCommitmentId;
     await ApiService.saveActivityLog(
       trajectoryId,
       payload.resistance,
       payload.note,
+      commitmentId,
     );
     await refreshAll?.();
   };
