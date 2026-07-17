@@ -12,12 +12,13 @@ const getSectionLabel = (total) => {
   return "// NEEDS ATTENTION";
 };
 
-const HomeScreenTrajectories = () => {
+const HomeScreenTrajectories = ({nTrajectories=3}) => {
   const { trajectories, styles } = useAppState();
 
   const coldest = Object.values(trajectories)
+    .filter((traj) => !traj.archived)
     .sort((a, b) => HEAT_WEIGHT[b.temperature] - HEAT_WEIGHT[a.temperature])
-    .slice(0, 3);
+    .slice(0, nTrajectories);
 
   const totalWeight = coldest.reduce(
     (sum, traj) => sum + HEAT_WEIGHT[traj.temperature],

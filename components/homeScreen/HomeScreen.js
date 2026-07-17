@@ -30,7 +30,7 @@ const HomeScreen = ({ navigation }) => {
       >
         <HomeScreenTitle />
         <HomeScreenStats />
-        <HomeScreenTrajectories />
+        <HomeScreenTrajectories nTrajectories={4} />
         <HomeScreenAttributes />
         <HomeScreenCommitments />
         <HomeScreenLogs />
