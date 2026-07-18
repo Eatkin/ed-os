@@ -5,11 +5,20 @@ import { getArchiveStats, getHeatColour } from "../../utils/trajectories";
 import { ApiService } from "../../services/ApiService/ApiService";
 
 const GoalsScreen = ({ navigation }) => {
-  const { styles, trajectories, logs, refreshAll, openConfirmModal } = useAppState();
+  const { styles, trajectories, logs, refreshAll, openConfirmModal } =
+    useAppState();
 
+  // Sort by Momentum
   const sortedTrajectories = Object.values(trajectories).sort((a, b) => {
     if (!a.lastLoggedAt) return 1; // never-logged sinks to bottom
     if (!b.lastLoggedAt) return -1;
+
+    const aMomentum = a.momentum ?? -Infinity;
+    const bMomentum = b.momentum ?? -Infinity;
+
+    if (aMomentum !== bMomentum) return bMomentum - aMomentum;
+
+    // Tiebreak (including both-null momentum) with recency, same as before
     return new Date(b.lastLoggedAt) - new Date(a.lastLoggedAt);
   });
 

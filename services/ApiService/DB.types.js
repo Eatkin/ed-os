@@ -193,6 +193,48 @@ export class EnrichedTrajectory extends Trajectory {
       return new Date(log.timestamp).toDateString() === today;
     }).length;
   }
+
+  // Momentum: this week's activity vs your own rolling average.
+  // Signed, unbounded, relative to self — not a fixed scale.
+  // Used for sort order / "hottest trajectory", never displayed as a raw number.
+  get momentum() {
+    const WEEKS_BACK = 8;
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    // Not enough history yet — don't let a brand new trajectory
+    // look artificially "hot" or "cold" off a couple of logs.
+    if (this.totalLogs < 3) return null;
+
+    const buckets = new Array(WEEKS_BACK).fill(0);
+    this.recentLogs.forEach((log) => {
+      const age = now - new Date(log.timestamp).getTime();
+      const weekIndex = Math.floor(age / WEEK_MS);
+      if (weekIndex >= 0 && weekIndex < WEEKS_BACK) {
+        buckets[weekIndex]++;
+      }
+    });
+
+    const thisWeek = buckets[0];
+    const priorWeeks = buckets.slice(1);
+    const avg = priorWeeks.reduce((a, b) => a + b, 0) / priorWeeks.length;
+
+    if (avg === 0) {
+      // No prior baseline but logging now — treat as pure upswing
+      // rather than dividing by zero.
+      return thisWeek > 0 ? 1 : 0;
+    }
+
+    return (thisWeek - avg) / avg;
+  }
+
+  // Convenience flag for "hottest trajectories" surfacing — not a score,
+  // just a threshold for inclusion in that list.
+  get isSurging() {
+    const m = this.momentum;
+    return m !== null && m > 0.3 && this.weeklyLogCount > 0;
+  }
+
 }
 
 export class Note {

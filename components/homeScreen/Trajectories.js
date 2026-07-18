@@ -12,35 +12,47 @@ const getSectionLabel = (total) => {
   return "// NEEDS ATTENTION";
 };
 
-const HomeScreenTrajectories = ({nTrajectories=3}) => {
+const renderTrajectoryRow = (traj, rightContent, styles) => (
+  <View
+    key={traj.id}
+    style={{
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: "#222",
+    }}
+  >
+    <Text style={styles.statValue}>{traj.name}</Text>
+    {rightContent}
+  </View>
+);
+
+const HomeScreenTrajectories = ({ nTrajectories = 3 }) => {
   const { trajectories, styles } = useAppState();
 
-  const coldest = Object.values(trajectories)
-    .filter((traj) => !traj.archived)
+  const active = Object.values(trajectories).filter((traj) => !traj.archived);
+
+  const coldest = [...active]
     .sort((a, b) => HEAT_WEIGHT[b.temperature] - HEAT_WEIGHT[a.temperature])
     .slice(0, nTrajectories);
-
   const totalWeight = coldest.reduce(
     (sum, traj) => sum + HEAT_WEIGHT[traj.temperature],
     0,
   );
 
+  const surging = [...active]
+    .filter((traj) => traj.momentum !== null && traj.momentum > 0.3)
+    .sort((a, b) => b.momentum - a.momentum)
+    .slice(0, nTrajectories);
+
   return (
     <View style={styles.card}>
       <Text style={styles.monospaceText}>{getSectionLabel(totalWeight)}</Text>
-      {coldest.map((traj) => (
-        <View
-          key={traj.id}
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingVertical: 8,
-            borderBottomWidth: 1,
-            borderBottomColor: "#222",
-          }}
-        >
-          <Text style={styles.statValue}>{traj.name}</Text>
+      {coldest.map((traj) =>
+        renderTrajectoryRow(
+          traj,
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View
               style={{
@@ -51,10 +63,26 @@ const HomeScreenTrajectories = ({nTrajectories=3}) => {
                 marginRight: 6,
               }}
             />
-            <Text style={styles.statLabel}>{traj.temperature.toUpperCase()}</Text>
-          </View>
-        </View>
-      ))}
+            <Text style={styles.statLabel}>
+              {traj.temperature.toUpperCase()}
+            </Text>
+          </View>,
+          styles,
+        ),
+      )}
+
+      {surging.length > 0 && (
+        <>
+          <Text style={[styles.monospaceText, { marginTop: 16 }]}>SURGING</Text>
+          {surging.map((traj) =>
+            renderTrajectoryRow(
+              traj,
+              <Text style={styles.statLabel}>↑↑</Text>,
+              styles,
+            ),
+          )}
+        </>
+      )}
     </View>
   );
 };
