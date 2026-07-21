@@ -306,3 +306,15 @@ export function createLootItem({ name, category, cost, requiredMilestoneId, note
   return lootItem;
 }
 
+export function logLootRedemption(lootItemId, costPaid) {
+  const entry = {
+    id: `lootlog_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    lootItemId,
+    timestamp: new Date().toISOString(),
+    costPaid,
+  };
+
+  DB_STATE.lootLog.unshift(entry);
+  return entry;
+}
+

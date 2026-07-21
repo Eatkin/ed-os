@@ -456,6 +456,10 @@ export const MOCK_DATA = {
       notes: "Sweet treat reward",
     },
   ],
+
+  // Loot Log: history of individual redemption events (separate from
+  // the aggregate `status`/`purchased` fields on each loot item)
+  lootLog: [],
 };
 
 export const DB_STATE = MOCK_DATA;

@@ -10,6 +10,7 @@ import {
   EnrichedTrajectory,
   Log,
   LootItem,
+  LootRedemption,
   Profile,
 } from "./DB.types";
 import {
@@ -21,6 +22,7 @@ import {
   createNote,
   createMilestone,
   createLootItem,
+  logLootRedemption,
   archiveNote,
   createTrajectory,
 } from "./helpers";
@@ -63,6 +65,12 @@ export const ApiService = {
   getVault: async () => {
     const vault = DB_STATE.vault;
     return vault;
+  },
+
+  getLootLog: async (lootItemId = null, limit = 50) => {
+    let log = DB_STATE.lootLog.map((l) => new LootRedemption(l));
+    if (lootItemId) log = log.filter((l) => l.lootItemId === lootItemId);
+    return log.slice(0, limit);
   },
 
   // Mutators
@@ -168,6 +176,8 @@ export const ApiService = {
       }
       item.purchased += 1;
     }
+
+    logLootRedemption(item.id, item.cost ?? null);
 
     savePersistedState(DB_STATE);
     return {

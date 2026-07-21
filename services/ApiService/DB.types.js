@@ -12,7 +12,6 @@ import {
   ATTRIBUTE_XP_RATE,
   TRAJECTORY_LEVEL_XP,
   TRAJECTORY_XP_RATE,
-  XP_DECAY,
   XP_STEP,
 } from "./DB.constants";
 import { calculateHeat } from "./DB.utils";
@@ -298,6 +297,26 @@ export class Log {
   }
 }
 
+export class LootRedemption {
+  constructor({ id, lootItemId, timestamp, costPaid = null } = {}) {
+    this.id = id;
+    this.lootItemId = lootItemId;
+    this.timestamp = new Date(timestamp);
+    this.costPaid = costPaid;
+  }
+
+  get formattedTime() {
+    return this.timestamp.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  get formattedDate() {
+    return formatOrdinalDate(this.timestamp);
+  }
+}
+
 export class VaultItem {
   constructor({ id, trajectoryId, text } = {}) {
     this.id = id;
@@ -366,6 +385,7 @@ export class Database {
   constructor(data) {
     this.profile = new Profile(data.profile);
     this.logs = data.logs.map((l) => new Log(l));
+    this.lootLog = data.lootLog.map((l) => new LootRedemption(l));
     this.vault = data.vault.map((v) => new VaultItem(v));
     this.lootStore = data.lootStore.map((l) => new LootItem(l));
     this.commitments = data.commitments.map((c) => new Commitment(c));

@@ -21,6 +21,7 @@ export const AppStateProvider = ({ children }) => {
   const [notes, setNotes] = useState([]);
   const [commitments, setCommitments] = useState([]);
   const [loot, setLoot] = useState([]);
+  const [lootLog, setLootLog] = useState([]);
   const [vault, setVault] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,6 +46,7 @@ export const AppStateProvider = ({ children }) => {
     setNotes(data.notes);
     setCommitments(data.commitments);
     setLoot(data.lootStore);
+    setLootLog(data.lootLog);
     setVault(data.vault);
   };
 
@@ -127,6 +129,7 @@ export const AppStateProvider = ({ children }) => {
         logs,
         commitments,
         loot,
+        lootLog,
         vault,
         notes,
         loading,

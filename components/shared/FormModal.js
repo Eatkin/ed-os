@@ -15,12 +15,14 @@ import SelectButtons from "./form/SelectButtons";
 import TextEntryField from "./form/TextEntryField";
 import TrajectoryPickerField from "./form/TrajectoryPickerField";
 import AttributeWeightField from "./form/AttributeWeightField";
+import MilestonePickerField from "./form/MilestonePickerField";
 
 const FIELD_COMPONENTS = {
   select: SelectButtons,
   text: TextEntryField,
   trajectoryPicker: TrajectoryPickerField,
   attributeWeights: AttributeWeightField,
+  milestonePicker: MilestonePickerField,
 };
 
 // fields: [{ key, type, label, required, ...props for that field type }]
