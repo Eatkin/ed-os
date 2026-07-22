@@ -68,8 +68,20 @@ const GoalsScreen = ({ navigation }) => {
                 </Text>
               </View>
             </View>
-            <Text style={styles.subtitle}>LVL {traj.level}</Text>
-            <View style={styles.progressBarBg}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "flex-end",
+                marginTop: 6,
+              }}
+            >
+              <Text style={styles.levelLabel}>LV. {traj.level}</Text>
+              <Text style={[styles.statLabel, { color: "#888" }]}>
+                {traj.currentLevelXP} / {traj.xpToNextLevel} XP
+              </Text>
+            </View>
+            <View style={[styles.progressBarBg, { marginVertical: 6 }]}>
               <View
                 style={[
                   styles.progressBarFill,
@@ -77,6 +89,14 @@ const GoalsScreen = ({ navigation }) => {
                 ]}
               />
             </View>
+            <Text
+              style={[
+                styles.statLabel,
+                { marginBottom: 6, fontSize: 11, color: "#666" },
+              ]}
+            >
+              {traj.xpProgress ?? 0}% to Level {traj.level + 1}
+            </Text>
             <Text style={styles.statLabel}>
               {traj.weeklyLogCount}/{traj.weeklyTarget} this week
             </Text>

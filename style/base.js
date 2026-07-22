@@ -50,6 +50,12 @@ const baseStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  levelLabel: {
+    color: "#FFB300",
+    fontFamily: "monospace",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
 
   // Navigation
   tabBar: {
