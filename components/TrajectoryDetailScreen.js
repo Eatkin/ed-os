@@ -17,9 +17,10 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
     vault,
     openLogModal,
     openMilestoneModal,
+    openMilestoneAdderModal,
     openConfirmModal,
     openCommitmentModal,
-    openNoteModal
+    openNoteModal,
   } = useAppState();
   const traj = trajectories[trajectoryId];
 
@@ -51,10 +52,18 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
           justifyContent: "space-between",
         }}
       >
-        <Text style={styles.title}>// {traj.name.toUpperCase()}</Text>
+        <Text
+          style={[styles.title, { flex: 1, marginRight: 8 }]}
+          numberOfLines={1}
+        >
+          // {traj.name.toUpperCase()}
+        </Text>
         {/* Subtle temperature indicator badge */}
         <Text
-          style={[styles.statLabel, { color: getHeatColour(traj.temperature) }]}
+          style={[
+            styles.statLabel,
+            { color: getHeatColour(traj.temperature), flexShrink: 0 },
+          ]}
         >
           [ {traj.temperature?.toUpperCase() ?? "COLD"} ]
         </Text>
@@ -120,9 +129,9 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
         </Text>
       </View>
 
-      <View style={{ flexDirection: "row" }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
         <TouchableOpacity
-          style={[styles.card, { flex: 1, marginRight: 6 }]}
+          style={[styles.card, { width: "48%", marginBottom: 0 }]}
           onPress={() => openLogModal(trajectoryId)}
         >
           <Text style={[styles.statValue, { textAlign: "center" }]}>
@@ -131,7 +140,7 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { flex: 1, marginLeft: 6 }]}
+          style={[styles.card, { width: "48%", marginBottom: 0 }]}
           onPress={() => openCommitmentModal(trajectoryId)}
         >
           <Text style={[styles.statValue, { textAlign: "center" }]}>
@@ -140,7 +149,16 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { flex: 1, marginLeft: 6 }]}
+          style={[styles.card, { width: "48%", marginBottom: 0 }]}
+          onPress={() => openMilestoneAdderModal(trajectoryId)}
+        >
+          <Text style={[styles.statValue, { textAlign: "center" }]}>
+            + MILESTONE
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.card, { width: "48%", marginBottom: 0 }]}
           onPress={() => openNoteModal(trajectoryId)}
         >
           <Text style={[styles.statValue, { textAlign: "center" }]}>
