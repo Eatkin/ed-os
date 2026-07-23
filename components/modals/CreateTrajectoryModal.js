@@ -7,9 +7,17 @@ const FRICTION_OPTIONS = ["low", "medium", "high"];
 const CreateTrajectoryModal = () => {
   const {
     createTrajectoryModalVisible,
+    createTrajectoryModalEditingId,
     closeCreateTrajectoryModal,
+    trajectories,
     refreshAll,
   } = useAppState();
+
+  const editingTraj = createTrajectoryModalEditingId
+    ? trajectories[createTrajectoryModalEditingId]
+    : null;
+
+  if (createTrajectoryModalEditingId && !editingTraj) return null;
 
   const fields = [
     {
@@ -53,13 +61,25 @@ const CreateTrajectoryModal = () => {
     },
   ];
 
+  const prefill = editingTraj
+    ? {
+        name: editingTraj.name,
+        description: editingTraj.description,
+        friction: editingTraj.friction,
+        attributeWeights: editingTraj.attributeWeights ?? {},
+        weeklyTarget:
+          editingTraj.weeklyTarget != null ? String(editingTraj.weeklyTarget) : "",
+        minimumUnit: editingTraj.minimumUnit,
+      }
+    : {};
+
   const handleSubmit = async (payload) => {
     // Drop any attribute left at 0 — no point storing zero-weight entries
     const attributeWeights = Object.fromEntries(
       Object.entries(payload.attributeWeights ?? {}).filter(([, w]) => w > 0),
     );
 
-    await ApiService.createTrajectory({
+    const trajectoryData = {
       name: payload.name,
       description: payload.description || "",
       friction: payload.friction,
@@ -68,15 +88,23 @@ const CreateTrajectoryModal = () => {
         : 0,
       minimumUnit: payload.minimumUnit || "",
       attributeWeights,
-    });
+    };
+
+    if (editingTraj) {
+      await ApiService.updateTrajectory(editingTraj.id, trajectoryData);
+    } else {
+      await ApiService.createTrajectory(trajectoryData);
+    }
     await refreshAll();
   };
 
   return (
     <FormModal
       visible={createTrajectoryModalVisible}
-      title="// NEW TRAJECTORY"
+      title={editingTraj ? "// EDIT TRAJECTORY" : "// NEW TRAJECTORY"}
+      submitLabel={editingTraj ? "UPDATE" : "SUBMIT"}
       fields={fields}
+      prefill={prefill}
       onClose={closeCreateTrajectoryModal}
       onSubmit={handleSubmit}
     />

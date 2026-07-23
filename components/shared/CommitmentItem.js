@@ -7,8 +7,14 @@ import { ApiService } from "../../services/ApiService/ApiService";
 const STATUS_ICON = { PENDING: "⏳", FULFILLED: "💎", MISSED: "🐖" };
 
 const CommitmentItem = ({ commitment }) => {
-  const { styles, openLogModal, refreshAll, openConfirmModal, trajectories } =
-    useAppState();
+  const {
+    styles,
+    openLogModal,
+    openCommitmentModal,
+    refreshAll,
+    openConfirmModal,
+    trajectories,
+  } = useAppState();
   const [expanded, setExpanded] = useState(false);
 
   const isPending = commitment.status === "PENDING";
@@ -52,11 +58,8 @@ const CommitmentItem = ({ commitment }) => {
       </Text>
 
       {expanded && isPending && (
-        <View style={{ flexDirection: "row", marginTop: 10 }}>
-          <TouchableOpacity
-            style={[styles.card, { marginRight: 8, flex: 1 }]}
-            onPress={handleLogItNow}
-          >
+        <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 10, gap: 8 }}>
+          <TouchableOpacity style={[styles.card, { flex: 1 }]} onPress={handleLogItNow}>
             <Text style={styles.statValue}>✅ LOG IT NOW</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -64,6 +67,14 @@ const CommitmentItem = ({ commitment }) => {
             onPress={handleMarkMissed}
           >
             <Text style={styles.statValue}>😿 MARK MISSED</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.card, { flex: 1 }]}
+            onPress={() =>
+              openCommitmentModal(commitment.trajectoryId, commitment.id)
+            }
+          >
+            <Text style={styles.statValue}>✏️ EDIT</Text>
           </TouchableOpacity>
         </View>
       )}

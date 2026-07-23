@@ -18,83 +18,113 @@ const CommitmentModal = () => {
     commitmentModalVisible,
     closeCommitmentModal,
     commitmentModalTrajectoryId,
+    commitmentModalEditingId,
+    commitments,
     trajectories,
     refreshAll,
   } = useAppState();
+
+  const editing = !!commitmentModalEditingId;
+  const editingCommitment = editing
+    ? commitments.find((c) => c.id === commitmentModalEditingId)
+    : null;
+
+  if (editing && !editingCommitment) return null;
 
   const preselectedTraj = commitmentModalTrajectoryId
     ? trajectories[commitmentModalTrajectoryId]
     : null;
 
-  const fields = [
-    ...(!commitmentModalTrajectoryId
-      ? [
-          {
-            key: "trajectoryId",
-            type: "trajectoryPicker",
-            label: "PICK A TRAJECTORY",
-            required: true,
-            helperText: (values) => {
-              const traj = values.trajectoryId
-                ? trajectories[values.trajectoryId]
-                : null;
-              return traj?.minimumUnit
-                ? `Suggested minimum: ${traj.minimumUnit}`
-                : null;
-            },
-          },
-        ]
-      : []),
-    {
-      key: "reluctance",
-      type: "select",
-      label: "HOW MUCH DO YOU NOT WANT TO DO THIS?",
-      options: RELUCTANCE_OPTIONS,
-      optionSubtext: (opt) => `+${COMMITMENT_RELUCTANCE_BONUS[opt]} XP bonus`,
-      required: true,
-    },
-    {
-      key: "expiryPreset",
-      type: "select",
-      label: "COMPLETE BY",
-      options: EXPIRY_PRESETS,
-      required: true,
-    },
-    {
-      key: "notes",
-      type: "text",
-      label: "REQUIREMENT",
-      placeholder: "What are you committing to?",
-      required: true,
-    },
-  ];
+  const fields = editing
+    ? [
+        {
+          key: "notes",
+          type: "text",
+          label: "REQUIREMENT",
+          placeholder: "What are you committing to?",
+          required: true,
+        },
+      ]
+    : [
+        ...(!commitmentModalTrajectoryId
+          ? [
+              {
+                key: "trajectoryId",
+                type: "trajectoryPicker",
+                label: "PICK A TRAJECTORY",
+                required: true,
+                helperText: (values) => {
+                  const traj = values.trajectoryId
+                    ? trajectories[values.trajectoryId]
+                    : null;
+                  return traj?.minimumUnit
+                    ? `Suggested minimum: ${traj.minimumUnit}`
+                    : null;
+                },
+              },
+            ]
+          : []),
+        {
+          key: "reluctance",
+          type: "select",
+          label: "HOW MUCH DO YOU NOT WANT TO DO THIS?",
+          options: RELUCTANCE_OPTIONS,
+          optionSubtext: (opt) => `+${COMMITMENT_RELUCTANCE_BONUS[opt]} XP bonus`,
+          required: true,
+        },
+        {
+          key: "expiryPreset",
+          type: "select",
+          label: "COMPLETE BY",
+          options: EXPIRY_PRESETS,
+          required: true,
+        },
+        {
+          key: "notes",
+          type: "text",
+          label: "REQUIREMENT",
+          placeholder: "What are you committing to?",
+          required: true,
+        },
+      ];
+
+  const prefill = editing
+    ? { notes: editingCommitment.notes }
+    : {
+        trajectoryId: commitmentModalTrajectoryId ?? undefined,
+        expiryPreset: "tomorrow",
+      };
 
   const handleSubmit = async (payload) => {
-    const trajectoryId = commitmentModalTrajectoryId || payload.trajectoryId;
-    const bonusXP = COMMITMENT_RELUCTANCE_BONUS[payload.reluctance];
-    const expiresAt = getExpiryPreset(payload.expiryPreset);
-    await ApiService.createCommitment(
-      trajectoryId,
-      payload.notes,
-      expiresAt,
-      bonusXP,
-    );
+    if (editing) {
+      await ApiService.updateCommitment(editingCommitment.id, {
+        notes: payload.notes,
+      });
+    } else {
+      const trajectoryId = commitmentModalTrajectoryId || payload.trajectoryId;
+      const bonusXP = COMMITMENT_RELUCTANCE_BONUS[payload.reluctance];
+      const expiresAt = getExpiryPreset(payload.expiryPreset);
+      await ApiService.createCommitment(
+        trajectoryId,
+        payload.notes,
+        expiresAt,
+        bonusXP,
+      );
+    }
     await refreshAll();
   };
 
   return (
     <FormModal
       visible={commitmentModalVisible}
-      title="// MAKE A COMMITMENT"
+      title={editing ? "// EDIT COMMITMENT" : "// MAKE A COMMITMENT"}
+      submitLabel={editing ? "UPDATE" : "SUBMIT"}
       fields={fields}
-      prefill={{
-        trajectoryId: commitmentModalTrajectoryId ?? undefined,
-        expiryPreset: "tomorrow",
-      }}
+      prefill={prefill}
       onClose={closeCommitmentModal}
       onSubmit={handleSubmit}
       headerExtra={
-        preselectedTraj?.minimumUnit ? (
+        !editing && preselectedTraj?.minimumUnit ? (
           <Text
             style={[
               styles.statLabel,

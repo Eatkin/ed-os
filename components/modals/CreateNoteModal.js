@@ -7,11 +7,20 @@ const NoteModal = () => {
     noteModalVisible,
     closeNoteModal,
     noteModalTrajectoryId,
+    noteModalEditingId,
+    notes,
     refreshAll,
   } = useAppState();
 
+  const editing = !!noteModalEditingId;
+  const editingNote = editing
+    ? notes.find((n) => n.id === noteModalEditingId)
+    : null;
+
+  if (editing && !editingNote) return null;
+
   const fields = [
-    ...(!noteModalTrajectoryId
+    ...(editing || !noteModalTrajectoryId
       ? [
           {
             key: "trajectoryId",
@@ -30,18 +39,31 @@ const NoteModal = () => {
     },
   ];
 
+  const prefill = editing
+    ? { trajectoryId: editingNote.trajectoryId ?? null, note: editingNote.note }
+    : { trajectoryId: noteModalTrajectoryId ?? null };
+
   const handleSubmit = async (payload) => {
-    const trajectoryId = noteModalTrajectoryId ?? payload.trajectoryId ?? null;
-    await ApiService.addNote(trajectoryId, payload.note);
+    if (editing) {
+      await ApiService.updateNote(editingNote.id, {
+        note: payload.note,
+        trajectoryId: payload.trajectoryId ?? null,
+      });
+    } else {
+      const trajectoryId =
+        noteModalTrajectoryId ?? payload.trajectoryId ?? null;
+      await ApiService.addNote(trajectoryId, payload.note);
+    }
     await refreshAll();
   };
 
   return (
     <FormModal
       visible={noteModalVisible}
-      title="// ADD NOTE"
+      title={editing ? "// EDIT NOTE" : "// ADD NOTE"}
+      submitLabel={editing ? "UPDATE" : "SUBMIT"}
       fields={fields}
-      prefill={{ trajectoryId: noteModalTrajectoryId ?? null }}
+      prefill={prefill}
       onClose={closeNoteModal}
       onSubmit={handleSubmit}
     />

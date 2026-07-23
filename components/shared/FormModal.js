@@ -35,6 +35,7 @@ const FormModal = ({
   onSubmit,
   prefill = {},
   headerExtra = null,
+  submitLabel = "SUBMIT",
 }) => {
   const { styles } = useAppState();
   const [values, setValues] = useState(prefill);
@@ -154,7 +155,7 @@ const FormModal = ({
                 disabled={missingRequired || submitting}
               >
                 <Text style={[styles.statValue, { textAlign: "center" }]}>
-                  {submitting ? "SAVING..." : "SUBMIT"}
+                  {submitting ? "SAVING..." : submitLabel}
                 </Text>
               </TouchableOpacity>
             </ScrollView>

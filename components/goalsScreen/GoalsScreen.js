@@ -1,15 +1,19 @@
+import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppState } from "../../context/AppStateContext";
 import { getArchiveStats, getHeatColour } from "../../utils/trajectories";
 import { ApiService } from "../../services/ApiService/ApiService";
+import SelectButtons from "../shared/form/SelectButtons";
 
-const GoalsScreen = ({ navigation }) => {
-  const { styles, trajectories, logs, refreshAll, openConfirmModal } =
-    useAppState();
+const SORT_OPTIONS = [
+  { value: "momentum", label: "MOMENTUM" },
+  { value: "name", label: "NAME" },
+  { value: "lastLogged", label: "LAST LOGGED" },
+];
 
-  // Sort by Momentum
-  const sortedTrajectories = Object.values(trajectories).sort((a, b) => {
+const SORT_COMPARATORS = {
+  momentum: (a, b) => {
     if (!a.lastLoggedAt) return 1; // never-logged sinks to bottom
     if (!b.lastLoggedAt) return -1;
 
@@ -20,7 +24,23 @@ const GoalsScreen = ({ navigation }) => {
 
     // Tiebreak (including both-null momentum) with recency, same as before
     return new Date(b.lastLoggedAt) - new Date(a.lastLoggedAt);
-  });
+  },
+  name: (a, b) => a.name.localeCompare(b.name),
+  lastLogged: (a, b) => {
+    if (!a.lastLoggedAt) return 1; // never-logged sinks to bottom
+    if (!b.lastLoggedAt) return -1;
+    return new Date(b.lastLoggedAt) - new Date(a.lastLoggedAt);
+  },
+};
+
+const GoalsScreen = ({ navigation }) => {
+  const { styles, trajectories, logs, refreshAll, openConfirmModal } =
+    useAppState();
+  const [sortBy, setSortBy] = useState("momentum");
+
+  const sortedTrajectories = Object.values(trajectories).sort(
+    SORT_COMPARATORS[sortBy],
+  );
 
   const active = sortedTrajectories.filter((t) => !t.archived);
   const archived = Object.values(trajectories).filter((t) => t.archived);
@@ -40,6 +60,12 @@ const GoalsScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>// GOALS</Text>
+      <SelectButtons
+        label="SORT BY"
+        options={SORT_OPTIONS}
+        value={sortBy}
+        onChange={setSortBy}
+      />
       <ScrollView>
         {active.map((traj) => (
           <TouchableOpacity

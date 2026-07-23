@@ -10,8 +10,14 @@ const STATUS_BADGE = {
 };
 
 const LootItem = ({ item }) => {
-  const { styles, profile, trajectories, refreshAll, openConfirmModal } =
-    useAppState();
+  const {
+    styles,
+    profile,
+    trajectories,
+    refreshAll,
+    openConfirmModal,
+    openLootAdderModal,
+  } = useAppState();
   const [purchasing, setPurchasing] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const badge = STATUS_BADGE[item.status];
@@ -111,6 +117,20 @@ const LootItem = ({ item }) => {
               </TouchableOpacity>
             </>
           )}
+          <TouchableOpacity
+            onPress={() => openLootAdderModal(null, item.id)}
+            style={{
+              marginTop: 10,
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              borderWidth: 1,
+              borderColor: "#FFB300",
+              borderRadius: 8,
+              alignSelf: "flex-start",
+            }}
+          >
+            <Text style={[styles.statLabel, { color: "#555" }]}>✏️ EDIT</Text>
+          </TouchableOpacity>
         </>
       )}
     </TouchableOpacity>

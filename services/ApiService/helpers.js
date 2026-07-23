@@ -204,6 +204,26 @@ export function markCommitmentMissed(commitmentId) {
   return commitment;
 }
 
+// Patches a commitment's requirement text only, and only while still
+// PENDING — expiresAt/bonusXP come from create-time-only preset pickers
+// (reluctance/expiryPreset) with no meaningful raw edit form, and editing a
+// MISSED/FULFILLED commitment is already history at that point.
+export function updateCommitment(commitmentId, patch = {}) {
+  sweepExpiredCommitments();
+
+  const commitment = DB_STATE.commitments.find((c) => c.id === commitmentId);
+  if (!commitment) throw new Error(`Commitment ${commitmentId} not found`);
+  if (commitment.status !== "PENDING") {
+    throw new Error(
+      `Commitment ${commitmentId} is ${commitment.status}, not PENDING`,
+    );
+  }
+
+  if (patch.notes !== undefined) commitment.notes = patch.notes;
+
+  return commitment;
+}
+
 export function createTrajectory({
   name,
   description = "",
@@ -245,6 +265,25 @@ export function archiveTrajectory(trajectoryId, archived = true) {
   return traj;
 }
 
+// Patches editable trajectory fields. `id` is deliberately never touched
+// here, even if `name` changes — it's the DB_STATE.trajectories object key
+// and the FK stored on every note/log/commitment, so regenerating it would
+// require cascading rewrites across the whole DB with no rollback.
+export function updateTrajectory(trajectoryId, patch = {}) {
+  const traj = DB_STATE.trajectories[trajectoryId];
+  if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
+
+  if (patch.name !== undefined) traj.name = patch.name;
+  if (patch.description !== undefined) traj.description = patch.description;
+  if (patch.friction !== undefined) traj.friction = patch.friction;
+  if (patch.weeklyTarget !== undefined) traj.weeklyTarget = patch.weeklyTarget;
+  if (patch.minimumUnit !== undefined) traj.minimumUnit = patch.minimumUnit;
+  if (patch.attributeWeights !== undefined)
+    traj.attributeWeights = patch.attributeWeights;
+
+  return traj;
+}
+
 export function createNote(trajectoryId, note) {
   const newNote = {
     id: `note_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
@@ -263,6 +302,16 @@ export function archiveNote(noteId, archived = true) {
   return note;
 }
 
+export function updateNote(noteId, patch = {}) {
+  const note = DB_STATE.notes.find((n) => n.id === noteId);
+  if (!note) throw new Error(`Note ${noteId} not found`);
+
+  if (patch.note !== undefined) note.note = patch.note;
+  if (patch.trajectoryId !== undefined) note.trajectoryId = patch.trajectoryId;
+
+  return note;
+}
+
 export function createMilestone(trajectoryId, text) {
   const traj = DB_STATE.trajectories[trajectoryId];
   if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
@@ -278,7 +327,41 @@ export function createMilestone(trajectoryId, text) {
   return milestone;
 }
 
-export function createLootItem({ name, category, cost, requiredMilestoneId, notes }) {
+// Patches a milestone's text only — `cleared`/`unlocksLootIds` are owned by
+// clearMilestoneAndUnlockLoot and shouldn't be touched by a generic edit.
+export function updateMilestone(trajectoryId, milestoneId, patch = {}) {
+  const traj = DB_STATE.trajectories[trajectoryId];
+  if (!traj) throw new Error(`Trajectory ${trajectoryId} not found`);
+
+  const milestone = traj.milestones.find((m) => m.id === milestoneId);
+  if (!milestone) throw new Error(`Milestone ${milestoneId} not found`);
+
+  if (patch.text !== undefined) milestone.text = patch.text;
+
+  return milestone;
+}
+
+// Patches a log entry's note only. resistance/durationHours already fed a
+// one-time XP calculation applied to profile/trajectory state at creation
+// time (see createLogAndApplyXP) — there's no reversal/recompute mechanism,
+// so those fields are intentionally not editable here.
+export function updateLog(logId, patch = {}) {
+  const log = DB_STATE.logs.find((l) => l.id === logId);
+  if (!log) throw new Error(`Log ${logId} not found`);
+
+  if (patch.note !== undefined) log.note = patch.note;
+
+  return log;
+}
+
+export function createLootItem({
+  name,
+  category,
+  cost,
+  requiredMilestoneId,
+  notes,
+  recurring = false,
+}) {
   const lootItem = {
     id: `loot_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
     name,
@@ -287,6 +370,7 @@ export function createLootItem({ name, category, cost, requiredMilestoneId, note
     requiredMilestoneId,
     status: requiredMilestoneId ? "LOCKED" : "AVAILABLE", // no milestone = free/available immediately
     notes,
+    recurring,
   };
 
   DB_STATE.lootStore.push(lootItem);
@@ -304,6 +388,69 @@ export function createLootItem({ name, category, cost, requiredMilestoneId, note
   }
 
   return lootItem;
+}
+
+// Patches loot item fields. If requiredMilestoneId changes, unregisters the
+// item from its old milestone's unlocksLootIds and registers it on the new
+// one (mirroring createLootItem's registration logic), then recomputes
+// .status from the new requirement — UNLESS the item is already OWNED,
+// which must never be clobbered back to LOCKED/AVAILABLE by an edit.
+export function updateLootItem(lootItemId, patch = {}) {
+  const item = DB_STATE.lootStore.find((l) => l.id === lootItemId);
+  if (!item) throw new Error(`Loot item ${lootItemId} not found`);
+
+  if (patch.name !== undefined) item.name = patch.name;
+  if (patch.category !== undefined) item.category = patch.category;
+  if (patch.cost !== undefined) item.cost = patch.cost;
+  if (patch.notes !== undefined) item.notes = patch.notes;
+  if (patch.recurring !== undefined) item.recurring = patch.recurring;
+
+  if (
+    patch.requiredMilestoneId !== undefined &&
+    patch.requiredMilestoneId !== item.requiredMilestoneId
+  ) {
+    const trajList = Object.values(DB_STATE.trajectories);
+
+    if (item.requiredMilestoneId) {
+      for (const traj of trajList) {
+        const oldMilestone = traj.milestones.find(
+          (m) => m.id === item.requiredMilestoneId,
+        );
+        if (oldMilestone) {
+          oldMilestone.unlocksLootIds = oldMilestone.unlocksLootIds.filter(
+            (id) => id !== item.id,
+          );
+          break;
+        }
+      }
+    }
+
+    let newMilestone = null;
+    if (patch.requiredMilestoneId) {
+      for (const traj of trajList) {
+        const m = traj.milestones.find(
+          (m) => m.id === patch.requiredMilestoneId,
+        );
+        if (m) {
+          newMilestone = m;
+          m.unlocksLootIds.push(item.id);
+          break;
+        }
+      }
+    }
+
+    item.requiredMilestoneId = patch.requiredMilestoneId;
+
+    if (item.status !== "OWNED") {
+      item.status = !patch.requiredMilestoneId
+        ? "AVAILABLE"
+        : newMilestone?.cleared
+          ? "AVAILABLE"
+          : "LOCKED";
+    }
+  }
+
+  return item;
 }
 
 export function logLootRedemption(lootItemId, costPaid) {

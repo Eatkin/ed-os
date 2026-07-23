@@ -21,6 +21,7 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
     openConfirmModal,
     openCommitmentModal,
     openNoteModal,
+    openCreateTrajectoryModal,
   } = useAppState();
   const traj = trajectories[trajectoryId];
 
@@ -181,16 +182,29 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
           <>
             <Text style={styles.subtitle}>MILESTONES</Text>
             {traj.milestones.map((m) => (
-              <TouchableOpacity
+              <View
                 key={m.id}
-                style={styles.card}
-                disabled={m.cleared}
-                onPress={() => openMilestoneModal(traj.id, m.id)}
+                style={[
+                  styles.card,
+                  { flexDirection: "row", alignItems: "center" },
+                ]}
               >
-                <Text style={styles.statValue}>
-                  {m.cleared ? "✅" : "⬜️"} {m.text}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flex: 1 }}
+                  disabled={m.cleared}
+                  onPress={() => openMilestoneModal(traj.id, m.id)}
+                >
+                  <Text style={styles.statValue}>
+                    {m.cleared ? "✅" : "⬜️"} {m.text}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => openMilestoneAdderModal(traj.id, m.id)}
+                  style={{ paddingLeft: 12 }}
+                >
+                  <Text style={styles.statLabel}>✏️</Text>
+                </TouchableOpacity>
+              </View>
             ))}
           </>
         )}
@@ -222,25 +236,42 @@ const TrajectoryDetailScreen = ({ route, navigation }) => {
             ))}
           </>
         )}
-      </ScrollView>
 
-      <TouchableOpacity
-        onPress={handleArchive}
-        style={{
-          marginTop: 24,
-          marginBottom: 12,
-          alignItems: "center",
-          paddingVertical: 6,
-          paddingHorizontal: 12,
-          borderWidth: 1,
-          borderColor: "#FFB300",
-          borderRadius: 8,
-        }}
-      >
-        <Text style={[styles.statLabel, { color: "#AAA" }]}>
-          ARCHIVE THIS TRAJECTORY
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => openCreateTrajectoryModal(traj.id)}
+          style={{
+            marginTop: 24,
+            alignItems: "center",
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderWidth: 1,
+            borderColor: "#FFB300",
+            borderRadius: 8,
+          }}
+        >
+          <Text style={[styles.statLabel, { color: "#AAA" }]}>
+            ✏️ EDIT TRAJECTORY
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleArchive}
+          style={{
+            marginTop: 8,
+            marginBottom: 12,
+            alignItems: "center",
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderWidth: 1,
+            borderColor: "#FFB300",
+            borderRadius: 8,
+          }}
+        >
+          <Text style={[styles.statLabel, { color: "#AAA" }]}>
+            ARCHIVE THIS TRAJECTORY
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 };

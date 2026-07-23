@@ -3,7 +3,7 @@ import { TouchableOpacity, View, Text } from "react-native";
 import { useAppState } from "../../context/AppStateContext";
 
 const LogItem = ({ log }) => {
-  const { styles, trajectories } = useAppState();
+  const { styles, trajectories, openLogModal } = useAppState();
   const [expanded, setExpanded] = useState(false);
   const traj = trajectories[log.trajectoryId];
   const milestone = log.milestoneId
@@ -53,6 +53,22 @@ const LogItem = ({ log }) => {
           <Text style={styles.monospaceText}>
             {log.note?.trim() ? log.note : "No note added."}
           </Text>
+          <TouchableOpacity
+            onPress={() => openLogModal(log.trajectoryId, null, log.id)}
+            style={{
+              marginTop: 10,
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              borderWidth: 1,
+              borderColor: "#FFB300",
+              borderRadius: 8,
+              alignSelf: "flex-start",
+            }}
+          >
+            <Text style={[styles.statLabel, { color: "#555" }]}>
+              ✏️ EDIT NOTE
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </TouchableOpacity>

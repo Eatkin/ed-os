@@ -25,6 +25,12 @@ import {
   logLootRedemption,
   archiveNote,
   createTrajectory,
+  updateTrajectory,
+  updateMilestone,
+  updateNote,
+  updateLog,
+  updateLootItem,
+  updateCommitment,
 } from "./helpers";
 import { savePersistedState } from "./Persistance";
 
@@ -86,6 +92,15 @@ export const ApiService = {
     return { success: true, logs: await ApiService.getLogs() };
   },
 
+  /**
+   * PATCH: Edit a log's note (only field editable post-creation)
+   */
+  updateLog: async (logId, patch) => {
+    const log = updateLog(logId, patch);
+    savePersistedState(DB_STATE);
+    return { success: true, log };
+  },
+
   createCommitment: async (trajectoryId, notes, expiresAt, bonusXP = 0) => {
     const commitment = createCommitment(
       trajectoryId,
@@ -93,6 +108,15 @@ export const ApiService = {
       expiresAt,
       bonusXP,
     );
+    savePersistedState(DB_STATE);
+    return { success: true, commitment };
+  },
+
+  /**
+   * PATCH: Edit a pending commitment's requirement text
+   */
+  updateCommitment: async (commitmentId, patch) => {
+    const commitment = updateCommitment(commitmentId, patch);
     savePersistedState(DB_STATE);
     return { success: true, commitment };
   },
@@ -235,6 +259,15 @@ export const ApiService = {
   },
 
   /**
+   * PATCH: Edit trajectory fields (never touches id, even if name changes)
+   */
+  updateTrajectory: async (trajectoryId, patch) => {
+    updateTrajectory(trajectoryId, patch);
+    savePersistedState(DB_STATE);
+    return { success: true, trajectories: await ApiService.getTrajectories() };
+  },
+
+  /**
    * POST: Add note
    */
   addNote: async (trajectoryId, note) => {
@@ -253,6 +286,15 @@ export const ApiService = {
   },
 
   /**
+   * PATCH: Edit note text/trajectory
+   */
+  updateNote: async (noteId, patch) => {
+    const note = updateNote(noteId, patch);
+    savePersistedState(DB_STATE);
+    return { success: true, note };
+  },
+
+  /**
    * POST: Add milestone
    */
   createMilestone: async (trajectoryId, text) => {
@@ -262,10 +304,29 @@ export const ApiService = {
   },
 
   /**
+   * PATCH: Edit a milestone's text
+   */
+  updateMilestone: async (trajectoryId, milestoneId, patch) => {
+    updateMilestone(trajectoryId, milestoneId, patch);
+    savePersistedState(DB_STATE);
+    return { success: true, trajectories: await ApiService.getTrajectories() };
+  },
+
+  /**
    * POST: Add loot
    */
   createLootItem: async (lootData) => {
     const lootItem = createLootItem(lootData);
+    savePersistedState(DB_STATE);
+    return { success: true, lootItem };
+  },
+
+  /**
+   * PATCH: Edit loot item fields (handles unlocksLootIds bookkeeping +
+   * status recompute if requiredMilestoneId changes)
+   */
+  updateLootItem: async (lootItemId, patch) => {
+    const lootItem = updateLootItem(lootItemId, patch);
     savePersistedState(DB_STATE);
     return { success: true, lootItem };
   },

@@ -4,7 +4,8 @@ import { useAppState } from "../../context/AppStateContext";
 import { ApiService } from "../../services/ApiService/ApiService";
 
 const NoteItem = ({ note }) => {
-  const { styles, trajectories, refreshAll, openConfirmModal } = useAppState();
+  const { styles, trajectories, refreshAll, openConfirmModal, openNoteModal } =
+    useAppState();
   const [expanded, setExpanded] = useState(false);
   const traj = note.trajectoryId ? trajectories[note.trajectoryId] : null;
 
@@ -61,22 +62,40 @@ const NoteItem = ({ note }) => {
         </Text>
 
         {expanded && (
-          <TouchableOpacity
-            onPress={handleArchive}
-            style={{
-              marginTop: 10,
-              paddingVertical: 6,
-              paddingHorizontal: 12,
-              borderWidth: 1,
-              borderColor: "#FFB300",
-              borderRadius: 8,
-              alignSelf: "flex-start",
-            }}
-          >
-            <Text style={[styles.statLabel, { color: "#555" }]}>
-              {!archived ? "ARCHIVE" : "UNARCHIVE"}
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <TouchableOpacity
+              onPress={() => openNoteModal(note.trajectoryId, note.id)}
+              style={{
+                marginTop: 10,
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                borderWidth: 1,
+                borderColor: "#FFB300",
+                borderRadius: 8,
+                alignSelf: "flex-start",
+              }}
+            >
+              <Text style={[styles.statLabel, { color: "#555" }]}>
+                ✏️ EDIT
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleArchive}
+              style={{
+                marginTop: 10,
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                borderWidth: 1,
+                borderColor: "#FFB300",
+                borderRadius: 8,
+                alignSelf: "flex-start",
+              }}
+            >
+              <Text style={[styles.statLabel, { color: "#555" }]}>
+                {!archived ? "ARCHIVE" : "UNARCHIVE"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </TouchableOpacity>
